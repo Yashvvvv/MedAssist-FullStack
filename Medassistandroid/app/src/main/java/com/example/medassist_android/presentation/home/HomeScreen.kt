@@ -30,6 +30,9 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToMedicineDetail: (Long) -> Unit,
     onNavigateToDrugInteractions: () -> Unit,
+    onNavigateToReminders: () -> Unit = {},
+    onNavigateToMedicineHistory: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -165,8 +168,36 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 
-                // Empty spacer card for alignment
-                Box(modifier = Modifier.weight(1f))
+                QuickActionCard(
+                    icon = Icons.Default.Alarm,
+                    title = "Reminders",
+                    subtitle = "Set medicine alarms",
+                    onClick = onNavigateToReminders,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionCard(
+                    icon = Icons.Default.History,
+                    title = "History",
+                    subtitle = "View intake log",
+                    onClick = onNavigateToMedicineHistory,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                QuickActionCard(
+                    icon = Icons.Default.Settings,
+                    title = "Settings",
+                    subtitle = "App preferences",
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 

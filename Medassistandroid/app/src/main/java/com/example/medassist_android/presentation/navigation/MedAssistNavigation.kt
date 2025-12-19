@@ -22,6 +22,11 @@ import com.example.medassist_android.presentation.profile.ProfileScreen
 import com.example.medassist_android.presentation.profile.EditProfileScreen
 import com.example.medassist_android.presentation.profile.ChangePasswordScreen
 import com.example.medassist_android.presentation.medicine.DrugInteractionsScreen
+import com.example.medassist_android.presentation.reminder.ReminderListScreen
+import com.example.medassist_android.presentation.reminder.AddReminderScreen
+import com.example.medassist_android.presentation.reminder.MedicineHistoryScreen
+import com.example.medassist_android.presentation.reminder.LogIntakeScreen
+import com.example.medassist_android.presentation.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -42,6 +47,14 @@ sealed class Screen(val route: String) {
     object EditProfile : Screen("edit_profile")
     object ChangePassword : Screen("change_password")
     object DrugInteractions : Screen("drug_interactions")
+    object Reminders : Screen("reminders")
+    object AddReminder : Screen("add_reminder")
+    object EditReminder : Screen("edit_reminder/{reminderId}") {
+        fun createRoute(reminderId: Long) = "edit_reminder/$reminderId"
+    }
+    object MedicineHistory : Screen("medicine_history")
+    object LogIntake : Screen("log_intake")
+    object Settings : Screen("settings")
 }
 
 @Composable
@@ -110,6 +123,15 @@ fun MedAssistNavigation(
                 },
                 onNavigateToDrugInteractions = {
                     navController.navigate(Screen.DrugInteractions.route)
+                },
+                onNavigateToReminders = {
+                    navController.navigate(Screen.Reminders.route)
+                },
+                onNavigateToMedicineHistory = {
+                    navController.navigate(Screen.MedicineHistory.route)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
@@ -233,6 +255,69 @@ fun MedAssistNavigation(
                 authViewModel = authViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // Reminder Screens
+        composable(Screen.Reminders.route) {
+            ReminderListScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToAddReminder = {
+                    navController.navigate(Screen.AddReminder.route)
+                },
+                onNavigateToEditReminder = { reminderId ->
+                    navController.navigate(Screen.EditReminder.createRoute(reminderId))
+                }
+            )
+        }
+
+        composable(Screen.AddReminder.route) {
+            AddReminderScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.EditReminder.route) { backStackEntry ->
+            val reminderId = backStackEntry.arguments?.getString("reminderId")?.toLongOrNull() ?: 0L
+            // TODO: Load reminder for editing - for now just use add screen
+            AddReminderScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.MedicineHistory.route) {
+            MedicineHistoryScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onLogManualIntake = {
+                    navController.navigate(Screen.LogIntake.route)
+                }
+            )
+        }
+
+        composable(Screen.LogIntake.route) {
+            LogIntakeScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToChangePassword = {
+                    navController.navigate(Screen.ChangePassword.route)
                 }
             )
         }

@@ -6,13 +6,18 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.medassist_android.data.local.converter.ReminderConverters
 import com.example.medassist_android.data.local.converter.StringListConverter
 import com.example.medassist_android.data.local.dao.MedicineDao
 import com.example.medassist_android.data.local.dao.PharmacyDao
+import com.example.medassist_android.data.local.dao.ReminderDao
 import com.example.medassist_android.data.local.dao.SearchHistoryDao
 import com.example.medassist_android.data.local.dao.UserFavoriteDao
+import com.example.medassist_android.data.local.entity.MedicationReminderEntity
 import com.example.medassist_android.data.local.entity.MedicineEntity
+import com.example.medassist_android.data.local.entity.MedicineIntakeLogEntity
 import com.example.medassist_android.data.local.entity.PharmacyEntity
+import com.example.medassist_android.data.local.entity.ReminderAlarmEntity
 import com.example.medassist_android.data.local.entity.SearchHistoryEntity
 import com.example.medassist_android.data.local.entity.UserFavoriteEntity
 
@@ -21,18 +26,22 @@ import com.example.medassist_android.data.local.entity.UserFavoriteEntity
         MedicineEntity::class,
         PharmacyEntity::class,
         SearchHistoryEntity::class,
-        UserFavoriteEntity::class
+        UserFavoriteEntity::class,
+        MedicationReminderEntity::class,
+        ReminderAlarmEntity::class,
+        MedicineIntakeLogEntity::class
     ],
-    version = 2, // ✅ Incremented version from 1 to 2
+    version = 3, // Incremented version from 2 to 3 for reminder tables
     exportSchema = false
 )
-@TypeConverters(StringListConverter::class)
+@TypeConverters(StringListConverter::class, ReminderConverters::class)
 abstract class MedAssistDatabase : RoomDatabase() {
 
     abstract fun medicineDao(): MedicineDao
     abstract fun pharmacyDao(): PharmacyDao
     abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun userFavoriteDao(): UserFavoriteDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         const val DATABASE_NAME = "medassist_database"
@@ -89,6 +98,69 @@ abstract class MedAssistDatabase : RoomDatabase() {
 
                 // Rename new table to original name
                 database.execSQL("ALTER TABLE medicines_new RENAME TO medicines")
+            }
+        }
+
+        // Migration from version 2 to 3 - Add reminder tables
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Create medication_reminders table
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS medication_reminders (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        medicineName TEXT NOT NULL,
+                        medicineId INTEGER,
+                        dosage TEXT NOT NULL,
+                        frequency TEXT NOT NULL,
+                        times TEXT NOT NULL,
+                        daysOfWeek TEXT,
+                        startDate INTEGER NOT NULL,
+                        endDate INTEGER,
+                        instructions TEXT,
+                        isActive INTEGER NOT NULL DEFAULT 1,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                // Create reminder_alarms table
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS reminder_alarms (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        reminderId INTEGER NOT NULL,
+                        scheduledTime INTEGER NOT NULL,
+                        isCompleted INTEGER NOT NULL DEFAULT 0,
+                        completedAt INTEGER,
+                        isSkipped INTEGER NOT NULL DEFAULT 0,
+                        skippedReason TEXT,
+                        FOREIGN KEY(reminderId) REFERENCES medication_reminders(id) ON DELETE CASCADE
+                    )
+                """.trimIndent())
+
+                // Create medicine_intake_log table
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS medicine_intake_log (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        reminderId INTEGER,
+                        medicineName TEXT NOT NULL,
+                        medicineId INTEGER,
+                        dosage TEXT NOT NULL,
+                        intakeTime INTEGER NOT NULL,
+                        scheduledTime INTEGER,
+                        status TEXT NOT NULL,
+                        notes TEXT,
+                        sideEffectsExperienced TEXT,
+                        mood INTEGER,
+                        createdAt INTEGER NOT NULL,
+                        FOREIGN KEY(reminderId) REFERENCES medication_reminders(id) ON DELETE SET NULL
+                    )
+                """.trimIndent())
+
+                // Create indexes for faster queries
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_reminder_alarms_reminderId ON reminder_alarms(reminderId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_reminder_alarms_scheduledTime ON reminder_alarms(scheduledTime)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_medicine_intake_log_reminderId ON medicine_intake_log(reminderId)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_medicine_intake_log_intakeTime ON medicine_intake_log(intakeTime)")
             }
         }
     }

@@ -7,10 +7,13 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.example.medassist_android.data.local.MedAssistDatabase
 import com.example.medassist_android.data.local.TokenManager
+import com.example.medassist_android.data.local.UserPreferencesManager
 import com.example.medassist_android.data.local.dao.MedicineDao
 import com.example.medassist_android.data.local.dao.PharmacyDao
+import com.example.medassist_android.data.local.dao.ReminderDao
 import com.example.medassist_android.data.local.dao.SearchHistoryDao
 import com.example.medassist_android.data.local.dao.UserFavoriteDao
+import com.example.medassist_android.data.repository.ReminderRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,13 +41,22 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideUserPreferencesManager(@ApplicationContext context: Context): UserPreferencesManager {
+        return UserPreferencesManager(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideMedAssistDatabase(@ApplicationContext context: Context): MedAssistDatabase {
         return Room.databaseBuilder(
             context,
             MedAssistDatabase::class.java,
             MedAssistDatabase.DATABASE_NAME
         )
-            .addMigrations(MedAssistDatabase.MIGRATION_1_2) // ✅ Added proper migration
+            .addMigrations(
+                MedAssistDatabase.MIGRATION_1_2,
+                MedAssistDatabase.MIGRATION_2_3
+            )
             .fallbackToDestructiveMigration() // Keep as fallback for other schema changes
             .build()
     }
@@ -67,5 +79,16 @@ object DatabaseModule {
     @Provides
     fun provideUserFavoriteDao(database: MedAssistDatabase): UserFavoriteDao {
         return database.userFavoriteDao()
+    }
+
+    @Provides
+    fun provideReminderDao(database: MedAssistDatabase): ReminderDao {
+        return database.reminderDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideReminderRepository(reminderDao: ReminderDao): ReminderRepository {
+        return ReminderRepository(reminderDao)
     }
 }
