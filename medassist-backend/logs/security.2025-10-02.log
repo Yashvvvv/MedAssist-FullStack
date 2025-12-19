@@ -1,0 +1,6 @@
+{"@timestamp":"2025-10-02T00:11:11.8387337+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
+{"@timestamp":"2025-10-02T00:59:54.0512846+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
+{"@timestamp":"2025-10-02T01:00:29.1579404+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
+{"@timestamp":"2025-10-02T01:02:41.3007923+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
+{"@timestamp":"2025-10-02T01:03:43.2410565+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
+{"@timestamp":"2025-10-02T01:16:41.545695+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}

@@ -1,0 +1,1 @@
+{"@timestamp":"2025-10-04T02:50:32.2132899+05:30","level":"DEBUG","logger_name":"com.medassist.medassist_backend.security.JwtAuthenticationFilter","message":"Filter 'jwtAuthenticationFilter' configured for use"}
