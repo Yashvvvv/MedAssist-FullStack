@@ -327,4 +327,61 @@ class AuthRepository @Inject constructor(
             emit(Resource.Error("Token refresh failed"))
         }
     }
+
+    // Profile update functionality
+    fun updateProfile(request: UserProfileUpdateRequest): Flow<Resource<UserProfile>> = flow {
+        try {
+            emit(Resource.Loading())
+
+            val response = authApiService.updateProfile(request)
+            if (response.isSuccessful) {
+                val apiResponse = response.body()
+                if (apiResponse?.success == true && apiResponse.data != null) {
+                    emit(Resource.Success(apiResponse.data))
+                } else {
+                    emit(Resource.Error(apiResponse?.message ?: "Failed to update profile"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                emit(Resource.Error(parseErrorBody(errorBody)))
+            }
+        } catch (e: HttpException) {
+            Timber.e(e, "Update profile HTTP error")
+            emit(Resource.Error(e.localizedMessage ?: "Network error"))
+        } catch (e: IOException) {
+            Timber.e(e, "Update profile IO error")
+            emit(Resource.Error("Network connection error"))
+        } catch (e: Exception) {
+            Timber.e(e, "Update profile error")
+            emit(Resource.Error("An unexpected error occurred"))
+        }
+    }
+
+    fun getUserProfile(): Flow<Resource<UserProfile>> = flow {
+        try {
+            emit(Resource.Loading())
+
+            val response = authApiService.getUserProfile()
+            if (response.isSuccessful) {
+                val apiResponse = response.body()
+                if (apiResponse?.success == true && apiResponse.data != null) {
+                    emit(Resource.Success(apiResponse.data))
+                } else {
+                    emit(Resource.Error(apiResponse?.message ?: "Failed to get profile"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                emit(Resource.Error(parseErrorBody(errorBody)))
+            }
+        } catch (e: HttpException) {
+            Timber.e(e, "Get profile HTTP error")
+            emit(Resource.Error(e.localizedMessage ?: "Network error"))
+        } catch (e: IOException) {
+            Timber.e(e, "Get profile IO error")
+            emit(Resource.Error("Network connection error"))
+        } catch (e: Exception) {
+            Timber.e(e, "Get profile error")
+            emit(Resource.Error("An unexpected error occurred"))
+        }
+    }
 }

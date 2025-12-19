@@ -20,6 +20,7 @@ import com.example.medassist_android.presentation.auth.AuthViewModel
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -36,7 +37,7 @@ fun ProfileScreen(
                 }
             },
             actions = {
-                IconButton(onClick = { /* TODO: Edit profile */ }) {
+                IconButton(onClick = onNavigateToEditProfile) {
                     Icon(Icons.Default.Edit, contentDescription = "Edit")
                 }
             }
@@ -182,7 +183,7 @@ fun ProfileScreen(
                     ProfileMenuItem(
                         icon = Icons.Default.Person,
                         title = "Edit Profile",
-                        onClick = { /* TODO: Navigate to edit profile */ }
+                        onClick = onNavigateToEditProfile
                     )
 
                     ProfileMenuItem(

@@ -95,3 +95,33 @@ class ChangePasswordUseCase @Inject constructor(
         )
     }
 }
+
+class UpdateProfileUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    operator fun invoke(
+        firstName: String?,
+        lastName: String?,
+        phoneNumber: String?,
+        medicalSpecialty: String? = null,
+        hospitalAffiliation: String? = null
+    ): Flow<Resource<com.example.medassist_android.data.model.UserProfile>> {
+        return authRepository.updateProfile(
+            com.example.medassist_android.data.model.UserProfileUpdateRequest(
+                firstName = firstName,
+                lastName = lastName,
+                phoneNumber = phoneNumber,
+                medicalSpecialty = medicalSpecialty,
+                hospitalAffiliation = hospitalAffiliation
+            )
+        )
+    }
+}
+
+class GetUserProfileUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    operator fun invoke(): Flow<Resource<com.example.medassist_android.data.model.UserProfile>> {
+        return authRepository.getUserProfile()
+    }
+}

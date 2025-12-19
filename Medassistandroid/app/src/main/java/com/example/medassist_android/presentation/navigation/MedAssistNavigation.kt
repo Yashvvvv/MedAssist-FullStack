@@ -19,6 +19,7 @@ import com.example.medassist_android.presentation.pharmacy.PharmacyListScreen
 import com.example.medassist_android.presentation.pharmacy.PharmacyDetailScreen
 import com.example.medassist_android.presentation.pharmacy.PharmacyMapScreen
 import com.example.medassist_android.presentation.profile.ProfileScreen
+import com.example.medassist_android.presentation.profile.EditProfileScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -36,6 +37,7 @@ sealed class Screen(val route: String) {
     }
     object PharmacyMap : Screen("pharmacy_map")
     object Profile : Screen("profile")
+    object EditProfile : Screen("edit_profile")
 }
 
 @Composable
@@ -184,6 +186,17 @@ fun MedAssistNavigation(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
+                },
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            EditProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
