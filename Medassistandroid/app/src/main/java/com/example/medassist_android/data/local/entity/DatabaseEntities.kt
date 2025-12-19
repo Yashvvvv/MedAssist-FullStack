@@ -11,46 +11,55 @@ data class MedicineEntity(
     @PrimaryKey val id: Long,
     val name: String,
     val genericName: String,
-    val brandNames: List<String>,
+    val brandNames: List<String>?,
     val description: String?,
     val usageDescription: String?,
     val dosageInformation: String?,
-    val sideEffects: List<String>,
+    val sideEffects: List<String>?,
     val manufacturer: String,
-    val category: String,
-    val form: String,
-    val strength: String,
-    val activeIngredient: String, // Changed from List<String> to String
+    val category: String?,
+    val form: String?,
+    val strength: String?,
+    val activeIngredient: String?,
     val requiresPrescription: Boolean,
-    val storageInstructions: String?, // Added missing field
-    val createdAt: String,
-    val updatedAt: String,
+    val storageInstructions: String?,
+    val createdAt: String?,
+    val updatedAt: String?,
     val isFavorite: Boolean = false,
     val lastSearched: Long? = null
 )
 
+// Updated PharmacyEntity to match backend Pharmacy entity
 @Entity(tableName = "pharmacies")
 data class PharmacyEntity(
     @PrimaryKey val id: Long,
     val name: String,
     val address: String,
-    val phoneNumber: String,
-    val email: String?,
-    val website: String?,
-    val operatingHours: String, // JSON string
-    val services: String, // JSON string
-    val isActive: Boolean,
-    val latitude: Double,
-    val longitude: Double,
-    val distance: Double?,
-    val distanceUnit: String?,
-    val isCurrentlyOpen: Boolean?,
-    val nextOpeningTime: String?,
-    val nextClosingTime: String?,
-    val googleMapsUrl: String?,
-    val directionsUrl: String?,
-    val createdAt: String,
-    val updatedAt: String,
+    val city: String?,
+    val state: String?,
+    val zipCode: String?,
+    val country: String?,
+    val phoneNumber: String?,
+    val emailAddress: String?,
+    val operatingHours: String?, // JSON string or simple text
+    val emergencyHours: String?,
+    val websiteUrl: String?,
+    val is24Hours: Boolean = false,
+    val acceptsInsurance: Boolean = false,
+    val hasDriveThrough: Boolean = false,
+    val hasDelivery: Boolean = false,
+    val hasConsultation: Boolean = false,
+    val services: String?, // JSON string
+    val latitude: Double?,
+    val longitude: Double?,
+    val licenseNumber: String?,
+    val managerName: String?,
+    val pharmacistName: String?,
+    val chainName: String?,
+    val rating: Double?,
+    val isActive: Boolean = true,
+    val createdAt: String?,
+    val updatedAt: String?,
     val isFavorite: Boolean = false,
     val lastViewed: Long? = null
 )
@@ -59,7 +68,7 @@ data class PharmacyEntity(
 data class SearchHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val query: String,
-    val searchType: String, // TEXT, IMAGE, COMBINED
+    val searchType: String, // TEXT, IMAGE, COMBINED, AI_TEXT, AI_IMAGE, AI_COMBINED
     val timestamp: Long,
     val resultCount: Int,
     val userId: Long?

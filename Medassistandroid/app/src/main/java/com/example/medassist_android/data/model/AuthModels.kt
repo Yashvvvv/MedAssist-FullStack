@@ -135,3 +135,41 @@ data class ErrorDetail(
     @Json(name = "code") val code: String,
     @Json(name = "timestamp") val timestamp: Long
 )
+
+// Profile-related models (aligned with UserProfileController)
+@JsonClass(generateAdapter = true)
+data class UserProfile(
+    @Json(name = "id") val id: Long,
+    @Json(name = "username") val username: String,
+    @Json(name = "email") val email: String,
+    @Json(name = "firstName") val firstName: String,
+    @Json(name = "lastName") val lastName: String,
+    @Json(name = "phoneNumber") val phoneNumber: String?,
+    @Json(name = "isVerified") val isVerified: Boolean,
+    @Json(name = "isHealthcareProvider") val isHealthcareProvider: Boolean,
+    @Json(name = "providerVerified") val providerVerified: Boolean,
+    @Json(name = "medicalSpecialty") val medicalSpecialty: String?,
+    @Json(name = "hospitalAffiliation") val hospitalAffiliation: String?,
+    @Json(name = "licenseNumber") val licenseNumber: String?,
+    @Json(name = "lastLogin") val lastLogin: String?,
+    @Json(name = "createdAt") val createdAt: String?
+)
+
+@JsonClass(generateAdapter = true)
+data class UserProfileUpdateRequest(
+    @Json(name = "firstName") val firstName: String?,
+    @Json(name = "lastName") val lastName: String?,
+    @Json(name = "phoneNumber") val phoneNumber: String?,
+    @Json(name = "medicalSpecialty") val medicalSpecialty: String?,
+    @Json(name = "hospitalAffiliation") val hospitalAffiliation: String?
+)
+
+@JsonClass(generateAdapter = true)
+data class AccountStatus(
+    @Json(name = "isActive") val isActive: Boolean,
+    @Json(name = "isVerified") val isVerified: Boolean,
+    @Json(name = "isHealthcareProvider") val isHealthcareProvider: Boolean,
+    @Json(name = "providerVerified") val providerVerified: Boolean,
+    @Json(name = "accountCreated") val accountCreated: String?,
+    @Json(name = "lastLogin") val lastLogin: String?
+)

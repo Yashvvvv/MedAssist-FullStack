@@ -148,12 +148,12 @@ fun PharmacyDetailScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = pharmacy.phoneNumber,
+                                    text = pharmacy.phoneNumber ?: "No phone number",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
 
-                            pharmacy.email?.let { email ->
+                            pharmacy.emailAddress?.let { email ->
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
@@ -171,7 +171,7 @@ fun PharmacyDetailScreen(
                                 }
                             }
 
-                            pharmacy.website?.let { website ->
+                            pharmacy.websiteUrl?.let { website ->
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
@@ -214,33 +214,61 @@ fun PharmacyDetailScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            pharmacy.isCurrentlyOpen?.let { isOpen ->
+                            // Display 24 hours badge if applicable
+                            if (pharmacy.is24Hours) {
                                 AssistChip(
                                     onClick = { },
-                                    label = {
-                                        Text(if (isOpen) "Currently Open" else "Currently Closed")
-                                    },
+                                    label = { Text("Open 24 Hours") },
                                     colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = if (isOpen)
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.errorContainer
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
                                     )
                                 )
                             }
 
-                            // Display operating hours (simplified)
+                            // Display operating hours (simplified or from backend)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Mon-Fri: 8:00 AM - 8:00 PM\nSat-Sun: 9:00 AM - 6:00 PM",
+                                text = pharmacy.operatingHours ?: "Mon-Fri: 8:00 AM - 8:00 PM\nSat-Sun: 9:00 AM - 6:00 PM",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
 
+                    // Features Card - Display pharmacy features
+                    Card {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Features",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (pharmacy.hasDelivery) {
+                                    AssistChip(onClick = { }, label = { Text("Delivery") })
+                                }
+                                if (pharmacy.hasDriveThrough) {
+                                    AssistChip(onClick = { }, label = { Text("Drive-Through") })
+                                }
+                                if (pharmacy.acceptsInsurance) {
+                                    AssistChip(onClick = { }, label = { Text("Insurance") })
+                                }
+                                if (pharmacy.hasConsultation) {
+                                    AssistChip(onClick = { }, label = { Text("Consultation") })
+                                }
+                            }
+                        }
+                    }
+
                     // Services Card
-                    if (pharmacy.services.isNotEmpty()) {
+                    if (!pharmacy.services.isNullOrEmpty()) {
                         Card {
                             Column(
                                 modifier = Modifier.padding(16.dp)

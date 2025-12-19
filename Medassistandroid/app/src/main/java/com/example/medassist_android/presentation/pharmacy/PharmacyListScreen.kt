@@ -167,7 +167,7 @@ fun PharmacyListItem(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = pharmacy.phoneNumber,
+                            text = pharmacy.phoneNumber ?: "N/A",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -206,12 +206,12 @@ fun PharmacyListItem(
                 }
             }
 
-            if (pharmacy.services.isNotEmpty()) {
+            if (!pharmacy.services.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    pharmacy.services.take(3).forEach { service ->
+                    pharmacy.services?.take(3)?.forEach { service ->
                         AssistChip(
                             onClick = { },
                             label = {

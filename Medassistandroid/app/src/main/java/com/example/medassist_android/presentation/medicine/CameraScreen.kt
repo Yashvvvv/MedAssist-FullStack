@@ -117,14 +117,21 @@ fun CameraScreen(
                             .padding(16.dp)
                     ) {
                         Column(Modifier.padding(16.dp)) {
-                            val match = result.medicines.firstOrNull()
-                            Text("Medicine Name: ${match?.name ?: "Unknown"}")
-                            Text("Match Reason: ${match?.matchReason ?: "No reason"}")
-                            Text("AI Summary: ${result.aiInsights.summary}")
-                            Button(onClick = {
-                                match?.id?.let { onNavigateToMedicineDetail(it) }
-                            }) {
-                                Text("View Details")
+                            Text("Medicine Name: ${result.medicineName ?: "Unknown"}")
+                            result.genericName?.let { Text("Generic: $it") }
+                            result.manufacturer?.let { Text("Manufacturer: $it") }
+                            result.description?.let { description ->
+                                Text(
+                                    text = "Description: ${description.take(100)}${if (description.length > 100) "..." else ""}",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            result.confidenceScore?.let { confidence ->
+                                Text("Confidence: ${String.format("%.0f", confidence * 100)}%")
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = onNavigateBack) {
+                                Text("Continue")
                             }
                         }
                     }

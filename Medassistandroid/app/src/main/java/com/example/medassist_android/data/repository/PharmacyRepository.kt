@@ -137,7 +137,12 @@ class PharmacyRepository @Inject constructor(
 
             val response = pharmacyApiService.getNearbyPharmacies(request)
             if (response.isSuccessful) {
-                val pharmacies = response.body() ?: emptyList()
+                val locationResponses = response.body() ?: emptyList()
+                
+                // Convert PharmacyLocationResponse to Pharmacy
+                val pharmacies = locationResponses.map { locationResponse ->
+                    locationResponse.toPharmacy()
+                }
 
                 // Cache the nearby pharmacies
                 pharmacies.forEach { pharmacy ->
@@ -189,49 +194,75 @@ class PharmacyRepository @Inject constructor(
     suspend fun getCachedNearbyPharmacies(): List<Pharmacy> {
         return pharmacyDao.getNearbyPharmacies().map { it.toPharmacy(moshi) }
     }
+
+    // New method for getting nearby pharmacies with full location details
+    fun getNearbyPharmaciesWithDetails(request: NearbyPharmaciesRequest): Flow<Resource<List<PharmacyLocationResponse>>> = flow {
+        try {
+            emit(Resource.Loading())
+
+            val response = pharmacyApiService.getNearbyPharmacies(request)
+            if (response.isSuccessful) {
+                val pharmacies = response.body() ?: emptyList()
+                emit(Resource.Success(pharmacies))
+            } else {
+                emit(Resource.Error("Failed to find nearby pharmacies"))
+            }
+        } catch (e: HttpException) {
+            emit(Resource.Error(e.localizedMessage ?: "Network error"))
+        } catch (e: IOException) {
+            emit(Resource.Error("Network connection error"))
+        } catch (e: Exception) {
+            Timber.e(e, "Get nearby pharmacies with details error")
+            emit(Resource.Error("An unexpected error occurred"))
+        }
+    }
 }
 
-// Extension functions for data mapping
+// Extension functions for data mapping - updated for new Pharmacy model
 private fun Pharmacy.toEntity(moshi: Moshi): PharmacyEntity {
-    val operatingHoursJson = moshi.adapter(OperatingHours::class.java).toJson(operatingHours)
-    val servicesJson = moshi.adapter(List::class.java).toJson(services)
+    val servicesListType = Types.newParameterizedType(List::class.java, String::class.java)
+    val servicesJson = try {
+        moshi.adapter<List<String>>(servicesListType).toJson(services ?: emptyList())
+    } catch (e: Exception) {
+        "[]"
+    }
 
     return PharmacyEntity(
         id = id,
         name = name,
         address = address,
+        city = city,
+        state = state,
+        zipCode = zipCode,
+        country = country,
         phoneNumber = phoneNumber,
-        email = email,
-        website = website,
-        operatingHours = operatingHoursJson,
+        emailAddress = emailAddress,
+        operatingHours = operatingHours,
+        emergencyHours = emergencyHours,
+        websiteUrl = websiteUrl,
+        is24Hours = is24Hours,
+        acceptsInsurance = acceptsInsurance,
+        hasDriveThrough = hasDriveThrough,
+        hasDelivery = hasDelivery,
+        hasConsultation = hasConsultation,
         services = servicesJson,
-        isActive = isActive,
         latitude = latitude,
         longitude = longitude,
-        distance = distance,
-        distanceUnit = distanceUnit,
-        isCurrentlyOpen = isCurrentlyOpen,
-        nextOpeningTime = nextOpeningTime,
-        nextClosingTime = nextClosingTime,
-        googleMapsUrl = googleMapsUrl,
-        directionsUrl = directionsUrl,
+        licenseNumber = licenseNumber,
+        managerName = managerName,
+        pharmacistName = pharmacistName,
+        chainName = chainName,
+        rating = rating,
+        isActive = isActive,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
 }
 
 private fun PharmacyEntity.toPharmacy(moshi: Moshi): Pharmacy {
-    val operatingHours = try {
-        moshi.adapter(OperatingHours::class.java).fromJson(operatingHours) ?: OperatingHours(
-            null, null, null, null, null, null, null
-        )
-    } catch (e: Exception) {
-        OperatingHours(null, null, null, null, null, null, null)
-    }
-
     val servicesListType = Types.newParameterizedType(List::class.java, String::class.java)
-    val services = try {
-        moshi.adapter<List<String>>(servicesListType).fromJson(services) ?: emptyList()
+    val servicesList = try {
+        moshi.adapter<List<String>>(servicesListType).fromJson(services ?: "[]") ?: emptyList()
     } catch (e: Exception) {
         emptyList<String>()
     }
@@ -240,22 +271,66 @@ private fun PharmacyEntity.toPharmacy(moshi: Moshi): Pharmacy {
         id = id,
         name = name,
         address = address,
+        city = city,
+        state = state,
+        zipCode = zipCode,
+        country = country,
         phoneNumber = phoneNumber,
-        email = email,
-        website = website,
+        emailAddress = emailAddress,
         operatingHours = operatingHours,
-        services = services,
-        isActive = isActive,
+        emergencyHours = emergencyHours,
+        websiteUrl = websiteUrl,
+        is24Hours = is24Hours,
+        acceptsInsurance = acceptsInsurance,
+        hasDriveThrough = hasDriveThrough,
+        hasDelivery = hasDelivery,
+        hasConsultation = hasConsultation,
+        services = servicesList,
         latitude = latitude,
         longitude = longitude,
-        distance = distance,
-        distanceUnit = distanceUnit,
-        isCurrentlyOpen = isCurrentlyOpen,
-        nextOpeningTime = nextOpeningTime,
-        nextClosingTime = nextClosingTime,
-        googleMapsUrl = googleMapsUrl,
-        directionsUrl = directionsUrl,
+        licenseNumber = licenseNumber,
+        managerName = managerName,
+        pharmacistName = pharmacistName,
+        chainName = chainName,
+        rating = rating,
+        isActive = isActive,
         createdAt = createdAt,
         updatedAt = updatedAt
+    )
+}
+
+// Extension to convert PharmacyLocationResponse to Pharmacy
+private fun PharmacyLocationResponse.toPharmacy(): Pharmacy {
+    return Pharmacy(
+        id = pharmacyId ?: 0L,
+        name = name,
+        address = address,
+        city = city,
+        state = state,
+        zipCode = zipCode,
+        country = null,
+        phoneNumber = phoneNumber,
+        emailAddress = emailAddress,
+        operatingHours = operatingHours,
+        emergencyHours = emergencyHours,
+        websiteUrl = websiteUrl,
+        is24Hours = is24Hours ?: false,
+        acceptsInsurance = acceptsInsurance ?: false,
+        hasDriveThrough = hasDriveThrough ?: false,
+        hasDelivery = hasDelivery ?: false,
+        hasConsultation = hasConsultation ?: false,
+        services = services,
+        latitude = latitude,
+        longitude = longitude,
+        licenseNumber = null,
+        managerName = managerName,
+        pharmacistName = pharmacistName,
+        chainName = chainName,
+        rating = rating,
+        isActive = true,
+        createdAt = responseTimestamp,
+        updatedAt = responseTimestamp,
+        distance = distanceKm,
+        isCurrentlyOpen = isOpenNow
     )
 }

@@ -101,14 +101,16 @@ fun MedicineDetailScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Row {
+                            medicine.category?.let { category ->
+                                AssistChip(
+                                    onClick = { },
+                                    label = { Text(category) }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
                             AssistChip(
                                 onClick = { },
-                                label = { Text(medicine.category) }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            AssistChip(
-                                onClick = { },
-                                label = { Text("${medicine.form} ${medicine.strength}") }
+                                label = { Text("${medicine.form ?: ""} ${medicine.strength ?: ""}".trim()) }
                             )
                         }
                     }
@@ -142,7 +144,7 @@ fun MedicineDetailScreen(
                 }
 
                 // Side Effects Card
-                if (medicine.sideEffects.isNotEmpty()) {
+                if (!medicine.sideEffects.isNullOrEmpty()) {
                     Card {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -163,7 +165,7 @@ fun MedicineDetailScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            medicine.sideEffects.forEach { sideEffect ->
+                            medicine.sideEffects?.forEach { sideEffect ->
                                 Text(
                                     text = "• $sideEffect",
                                     style = MaterialTheme.typography.bodyMedium,

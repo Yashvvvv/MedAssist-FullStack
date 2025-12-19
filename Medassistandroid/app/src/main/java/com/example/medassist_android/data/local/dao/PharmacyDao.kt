@@ -22,7 +22,7 @@ interface PharmacyDao {
     @Query("SELECT * FROM pharmacies WHERE name LIKE '%' || :query || '%' OR address LIKE '%' || :query || '%' ORDER BY name ASC")
     suspend fun searchPharmacies(query: String): List<PharmacyEntity>
 
-    @Query("SELECT * FROM pharmacies WHERE distance IS NOT NULL ORDER BY distance ASC")
+    @Query("SELECT * FROM pharmacies WHERE latitude IS NOT NULL AND longitude IS NOT NULL ORDER BY name ASC")
     suspend fun getNearbyPharmacies(): List<PharmacyEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

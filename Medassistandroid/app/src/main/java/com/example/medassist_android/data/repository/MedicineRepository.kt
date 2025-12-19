@@ -152,8 +152,8 @@ class MedicineRepository @Inject constructor(
         try {
             emit(Resource.Loading())
 
-            val request = MedicineAnalysisRequest(query)
-            val response = medicineApiService.analyzeByText(request)
+            // Backend expects query as @RequestParam, not @RequestBody
+            val response = medicineApiService.analyzeByText(query)
 
             if (response.isSuccessful) {
                 val analysisResponse = response.body()
@@ -163,7 +163,7 @@ class MedicineRepository @Inject constructor(
                         query = query,
                         searchType = "AI_TEXT",
                         timestamp = System.currentTimeMillis(),
-                        resultCount = analysisResponse.medicines.size,
+                        resultCount = 1, // Single medicine analysis
                         userId = null
                     )
                     searchHistoryDao.insertSearchHistory(searchHistory)
@@ -190,7 +190,8 @@ class MedicineRepository @Inject constructor(
             emit(Resource.Loading())
 
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+            // Backend expects @RequestParam("file"), not "image"
+            val imagePart = MultipartBody.Part.createFormData("file", imageFile.name, requestFile)
 
             val response = medicineApiService.analyzeByImage(imagePart)
 
@@ -202,7 +203,7 @@ class MedicineRepository @Inject constructor(
                         query = "Image analysis",
                         searchType = "AI_IMAGE",
                         timestamp = System.currentTimeMillis(),
-                        resultCount = analysisResponse.medicines.size,
+                        resultCount = 1,
                         userId = null
                     )
                     searchHistoryDao.insertSearchHistory(searchHistory)
@@ -229,10 +230,11 @@ class MedicineRepository @Inject constructor(
             emit(Resource.Loading())
 
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+            // Backend expects @RequestParam("image")
             val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-            val queryPart = query.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            val response = medicineApiService.analyzeCombined(imagePart, queryPart)
+            // Backend expects query as @RequestParam, not @Part
+            val response = medicineApiService.analyzeCombined(imagePart, query)
 
             if (response.isSuccessful) {
                 val analysisResponse = response.body()
@@ -242,7 +244,7 @@ class MedicineRepository @Inject constructor(
                         query = query,
                         searchType = "AI_COMBINED",
                         timestamp = System.currentTimeMillis(),
-                        resultCount = analysisResponse.medicines.size,
+                        resultCount = 1,
                         userId = null
                     )
                     searchHistoryDao.insertSearchHistory(searchHistory)
@@ -301,7 +303,7 @@ class MedicineRepository @Inject constructor(
     }
 }
 
-// Extension functions for data mapping
+// Extension functions for data mapping - updated for nullable fields
 private fun Medicine.toEntity(): MedicineEntity {
     return MedicineEntity(
         id = id,
@@ -316,9 +318,9 @@ private fun Medicine.toEntity(): MedicineEntity {
         category = category,
         form = form,
         strength = strength,
-        activeIngredient = activeIngredient, // Changed from activeIngredients
+        activeIngredient = activeIngredient,
         requiresPrescription = requiresPrescription,
-        storageInstructions = storageInstructions, // Added missing field
+        storageInstructions = storageInstructions,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -338,9 +340,10 @@ private fun MedicineEntity.toMedicine(): Medicine {
         category = category,
         form = form,
         strength = strength,
-        activeIngredient = activeIngredient, // Changed from activeIngredients
+        activeIngredient = activeIngredient,
+        activeIngredients = activeIngredient?.let { listOf(it) }, // Convert single to list for compatibility
         requiresPrescription = requiresPrescription,
-        storageInstructions = storageInstructions, // Added missing field
+        storageInstructions = storageInstructions,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
