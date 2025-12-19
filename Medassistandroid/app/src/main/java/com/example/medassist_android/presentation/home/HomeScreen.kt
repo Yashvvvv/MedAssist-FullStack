@@ -29,6 +29,7 @@ fun HomeScreen(
     onNavigateToPharmacyMap: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToMedicineDetail: (Long) -> Unit,
+    onNavigateToDrugInteractions: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -148,6 +149,24 @@ fun HomeScreen(
                     onClick = onNavigateToPharmacyMap,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionCard(
+                    icon = Icons.Default.Science,
+                    title = "Drug Interactions",
+                    subtitle = "Check safety",
+                    onClick = onNavigateToDrugInteractions,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                // Empty spacer card for alignment
+                Box(modifier = Modifier.weight(1f))
             }
         }
 

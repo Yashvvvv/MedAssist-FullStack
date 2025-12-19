@@ -18,7 +18,11 @@ data class MedicineUiState(
     val medicines: List<Medicine> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    // Drug Interactions
+    val isAnalyzing: Boolean = false,
+    val analysisResponse: MedicineAnalysisResponse? = null,
+    val analysisError: String? = null
 )
 
 data class MedicineDetailUiState(
@@ -56,6 +60,7 @@ class MedicineViewModel @Inject constructor(
     private val getRecentlySearchedUseCase: GetRecentlySearchedMedicinesUseCase,
     private val toggleFavoriteUseCase: ToggleMedicineFavoriteUseCase,
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase,
+    private val analyzeDrugInteractionsUseCase: AnalyzeDrugInteractionsUseCase,
     private val isLoggedInUseCase: IsLoggedInUseCase
 ) : ViewModel() {
 
@@ -369,5 +374,48 @@ class MedicineViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun analyzeDrugInteractions(primaryMedicine: String, otherMedicines: List<String>) {
+        viewModelScope.launch {
+            if (isLoggedInUseCase()) {
+                analyzeDrugInteractionsUseCase(primaryMedicine, otherMedicines).collect { resource ->
+                    when (resource) {
+                        is Resource.Loading -> {
+                            _medicineUiState.value = _medicineUiState.value.copy(
+                                isAnalyzing = true,
+                                analysisError = null
+                            )
+                        }
+                        is Resource.Success -> {
+                            _medicineUiState.value = _medicineUiState.value.copy(
+                                isAnalyzing = false,
+                                analysisResponse = resource.data,
+                                analysisError = null
+                            )
+                        }
+                        is Resource.Error -> {
+                            _medicineUiState.value = _medicineUiState.value.copy(
+                                isAnalyzing = false,
+                                analysisError = resource.message
+                            )
+                            Timber.e("Drug interaction analysis failed: ${resource.message}")
+                        }
+                    }
+                }
+            } else {
+                _medicineUiState.value = _medicineUiState.value.copy(
+                    analysisError = "User not authenticated. Please log in to continue."
+                )
+                Timber.e("User not authenticated")
+            }
+        }
+    }
+
+    fun clearDrugInteractionResult() {
+        _medicineUiState.value = _medicineUiState.value.copy(
+            analysisResponse = null,
+            analysisError = null
+        )
     }
 }

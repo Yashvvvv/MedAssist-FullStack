@@ -20,6 +20,8 @@ import com.example.medassist_android.presentation.pharmacy.PharmacyDetailScreen
 import com.example.medassist_android.presentation.pharmacy.PharmacyMapScreen
 import com.example.medassist_android.presentation.profile.ProfileScreen
 import com.example.medassist_android.presentation.profile.EditProfileScreen
+import com.example.medassist_android.presentation.profile.ChangePasswordScreen
+import com.example.medassist_android.presentation.medicine.DrugInteractionsScreen
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -38,6 +40,8 @@ sealed class Screen(val route: String) {
     object PharmacyMap : Screen("pharmacy_map")
     object Profile : Screen("profile")
     object EditProfile : Screen("edit_profile")
+    object ChangePassword : Screen("change_password")
+    object DrugInteractions : Screen("drug_interactions")
 }
 
 @Composable
@@ -103,6 +107,9 @@ fun MedAssistNavigation(
                 },
                 onNavigateToMedicineDetail = { medicineId ->
                     navController.navigate(Screen.MedicineDetail.createRoute(medicineId))
+                },
+                onNavigateToDrugInteractions = {
+                    navController.navigate(Screen.DrugInteractions.route)
                 }
             )
         }
@@ -189,12 +196,31 @@ fun MedAssistNavigation(
                 },
                 onNavigateToEditProfile = {
                     navController.navigate(Screen.EditProfile.route)
+                },
+                onNavigateToChangePassword = {
+                    navController.navigate(Screen.ChangePassword.route)
                 }
             )
         }
 
         composable(Screen.EditProfile.route) {
             EditProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.ChangePassword.route) {
+            ChangePasswordScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.DrugInteractions.route) {
+            DrugInteractionsScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

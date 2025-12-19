@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medassist_android.data.model.User
 import com.example.medassist_android.data.model.UserProfile
+import com.example.medassist_android.domain.usecase.auth.ChangePasswordUseCase
 import com.example.medassist_android.domain.usecase.auth.GetCurrentUserUseCase
 import com.example.medassist_android.domain.usecase.auth.GetUserProfileUseCase
 import com.example.medassist_android.domain.usecase.auth.UpdateProfileUseCase
@@ -32,11 +33,18 @@ data class EditProfileUiState(
     val isSuccess: Boolean = false
 )
 
+data class ChangePasswordUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val passwordChangeSuccess: Boolean = false
+)
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getUserProfileUseCase: GetUserProfileUseCase,
-    private val updateProfileUseCase: UpdateProfileUseCase
+    private val updateProfileUseCase: UpdateProfileUseCase,
+    private val changePasswordUseCase: ChangePasswordUseCase
 ) : ViewModel() {
 
     private val _profileUiState = MutableStateFlow(ProfileUiState())
@@ -44,6 +52,9 @@ class ProfileViewModel @Inject constructor(
 
     private val _editProfileUiState = MutableStateFlow(EditProfileUiState())
     val editProfileUiState: StateFlow<EditProfileUiState> = _editProfileUiState.asStateFlow()
+
+    private val _uiState = MutableStateFlow(ChangePasswordUiState())
+    val uiState: StateFlow<ChangePasswordUiState> = _uiState.asStateFlow()
 
     init {
         loadCurrentUser()
@@ -153,5 +164,41 @@ class ProfileViewModel @Inject constructor(
                 hospitalAffiliation = user.hospitalAffiliation ?: ""
             )
         }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            changePasswordUseCase(currentPassword, newPassword).collect { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = true,
+                            error = null,
+                            passwordChangeSuccess = false
+                        )
+                    }
+                    is Resource.Success -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            passwordChangeSuccess = true,
+                            error = null
+                        )
+                        Timber.d("Password changed successfully")
+                    }
+                    is Resource.Error -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = resource.message ?: "Failed to change password",
+                            passwordChangeSuccess = false
+                        )
+                        Timber.e("Password change failed: ${resource.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    fun resetPasswordChangeState() {
+        _uiState.value = ChangePasswordUiState()
     }
 }

@@ -301,6 +301,45 @@ class MedicineRepository @Inject constructor(
     suspend fun clearSearchHistory() {
         searchHistoryDao.deleteAllSearchHistory()
     }
+
+    fun analyzeDrugInteractions(
+        primaryMedicine: String,
+        otherMedicines: List<String>
+    ): Flow<Resource<MedicineAnalysisResponse>> = flow {
+        try {
+            emit(Resource.Loading())
+
+            val response = medicineApiService.analyzeDrugInteractions(primaryMedicine, otherMedicines)
+
+            if (response.isSuccessful) {
+                val analysisResponse = response.body()
+                if (analysisResponse != null) {
+                    // Save search history
+                    val searchHistory = SearchHistoryEntity(
+                        query = "Interaction: $primaryMedicine with ${otherMedicines.joinToString(", ")}",
+                        searchType = "AI_INTERACTIONS",
+                        timestamp = System.currentTimeMillis(),
+                        resultCount = analysisResponse.drugInteractions?.size ?: 0,
+                        userId = null
+                    )
+                    searchHistoryDao.insertSearchHistory(searchHistory)
+
+                    emit(Resource.Success(analysisResponse))
+                } else {
+                    emit(Resource.Error("Drug interaction analysis failed"))
+                }
+            } else {
+                emit(Resource.Error("Drug interaction analysis failed"))
+            }
+        } catch (e: HttpException) {
+            emit(Resource.Error(e.localizedMessage ?: "Network error"))
+        } catch (e: IOException) {
+            emit(Resource.Error("Network connection error"))
+        } catch (e: Exception) {
+            Timber.e(e, "Analyze drug interactions error")
+            emit(Resource.Error("An unexpected error occurred"))
+        }
+    }
 }
 
 // Extension functions for data mapping - updated for nullable fields

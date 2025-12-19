@@ -87,3 +87,14 @@ class ClearSearchHistoryUseCase @Inject constructor(
         medicineRepository.clearSearchHistory()
     }
 }
+
+class AnalyzeDrugInteractionsUseCase @Inject constructor(
+    private val medicineRepository: MedicineRepository
+) {
+    operator fun invoke(
+        primaryMedicine: String,
+        otherMedicines: List<String>
+    ): Flow<Resource<MedicineAnalysisResponse>> {
+        return medicineRepository.analyzeDrugInteractions(primaryMedicine, otherMedicines)
+    }
+}

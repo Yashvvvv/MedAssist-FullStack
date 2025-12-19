@@ -21,6 +21,7 @@ fun ProfileScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToChangePassword: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -189,7 +190,7 @@ fun ProfileScreen(
                     ProfileMenuItem(
                         icon = Icons.Default.Lock,
                         title = "Change Password",
-                        onClick = { /* TODO: Navigate to change password */ }
+                        onClick = onNavigateToChangePassword
                     )
 
                     ProfileMenuItem(
