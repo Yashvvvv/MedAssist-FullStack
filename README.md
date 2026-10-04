@@ -28,9 +28,9 @@ MedAssist-FullStack/
 - **Documentation**: Swagger/OpenAPI
 
 ### AI Integration
-- **Primary AI**: Claude API for medical information
-- **Image Recognition**: ML Kit + Custom vision models
-- **Natural Language Processing**: Claude for symptom analysis
+- **Primary AI**: Google Gemini API (`gemini-1.5-flash`) for medicine analysis and medical information
+- **Image Recognition**: Gemini multimodal: reads the text on a photographed medicine pack, then identifies the medicine
+- **Prompting**: server-side prompt templates (`PromptTemplateService`), with rate limiting (Bucket4j) and caching (Caffeine) in front of the AI calls
 
 ## Development Setup
 
@@ -66,7 +66,7 @@ MedAssist-FullStack/
 - 🔍 **Smart Search**: Search by name, symptoms, or description
 - 💊 **Comprehensive Info**: Dosage, side effects, interactions, manufacturing details
 - 📍 **Pharmacy Locator**: Find nearby pharmacies with map view
-- 🤖 **AI Assistant**: Claude-powered medical guidance
+- 🤖 **AI Assistant**: Gemini-powered medical guidance
 
 ### Medication Management
 - ⏰ **Medication Reminders**: Schedule and manage medicine reminders
