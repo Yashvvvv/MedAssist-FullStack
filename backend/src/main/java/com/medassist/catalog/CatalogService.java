@@ -24,9 +24,12 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class CatalogService {
 
-    /** GST slabs that apply to medicines and pharmacy goods. */
+    /**
+     * GST slabs since the rate rationalisation of 22 Sep 2025: 0 (life-saving drugs),
+     * 5 (medicines, devices), 18 (standard, e.g. cosmetics), 40 (de-merit goods).
+     */
     private static final Set<BigDecimal> GST_SLABS = Set.of(
-            new BigDecimal("0"), new BigDecimal("5"), new BigDecimal("12"), new BigDecimal("18"), new BigDecimal("28"));
+            new BigDecimal("0"), new BigDecimal("5"), new BigDecimal("18"), new BigDecimal("40"));
 
     private final MedicineRepository medicines;
     private final ProductRepository products;
@@ -159,7 +162,7 @@ public class CatalogService {
 
     private void apply(Product p, ProductRequest r) {
         if (GST_SLABS.stream().noneMatch(s -> s.compareTo(r.gstRate()) == 0)) {
-            throw ApiException.badRequest("INVALID_GST_RATE", "GST rate must be one of 0, 5, 12, 18, 28");
+            throw ApiException.badRequest("INVALID_GST_RATE", "GST rate must be one of 0, 5, 18, 40");
         }
         BigDecimal selling = r.sellingPrice() == null ? r.mrp() : r.sellingPrice();
         if (selling.compareTo(r.mrp()) > 0) {

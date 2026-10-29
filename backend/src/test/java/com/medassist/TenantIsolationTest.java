@@ -17,7 +17,7 @@ class TenantIsolationTest extends IntegrationTest {
     void productsOfOneOrgAreInvisibleToAnother() throws Exception {
         Session apollo = registerPharmacy("Apollo Test");
         Session wellness = registerPharmacy("Wellness Test");
-        String apolloProduct = createProduct(apollo, "Dolo 650", "OTC", "30.00", "12");
+        String apolloProduct = createProduct(apollo, "Dolo 650", "OTC", "30.00", "5");
 
         mvc.perform(get("/api/v1/products").with(wellness))
                 .andExpect(status().isOk())

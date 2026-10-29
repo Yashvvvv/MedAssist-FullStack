@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(TestcontainersConfig.class)
+@Import({TestcontainersConfig.class, TestAiConfig.class})
 public abstract class IntegrationTest {
 
     private static final AtomicInteger SEQ = new AtomicInteger();

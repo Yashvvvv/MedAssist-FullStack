@@ -33,4 +33,12 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByIdIn(Collection<UUID> ids);
 
     long countByActiveTrue();
+
+    /** Active products whose sellable stock at the branch is at or below their reorder level. */
+    @Query("""
+            select p from Product p where p.active = true and
+            (select coalesce(sum(b.quantity), 0) from com.medassist.inventory.StockBatch b
+             where b.productId = p.id and b.branchId = :branchId and b.expiryDate >= :today) <= p.reorderLevel
+            order by p.name""")
+    Page<Product> lowStock(UUID branchId, java.time.LocalDate today, Pageable pageable);
 }

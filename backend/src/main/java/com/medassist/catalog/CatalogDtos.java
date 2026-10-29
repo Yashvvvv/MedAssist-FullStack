@@ -40,7 +40,7 @@ public final class CatalogDtos {
             @Size(max = 40) String packSize,
             @NotNull DrugSchedule schedule,
             @Size(max = 10) String hsnCode,
-            @NotNull @DecimalMin("0") @DecimalMax("28") BigDecimal gstRate,
+            @NotNull @DecimalMin("0") @DecimalMax("40") BigDecimal gstRate,
             @NotNull @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal mrp,
             @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal sellingPrice,
             @Min(0) Integer reorderLevel,
