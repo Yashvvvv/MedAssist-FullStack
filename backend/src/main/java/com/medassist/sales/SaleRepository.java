@@ -34,7 +34,7 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
      * Next document number for a branch and fiscal year. The upsert takes a row lock, so
      * concurrent sales at one branch get consecutive numbers without gaps or duplicates.
      */
-    @Modifying
+    // Not @Modifying: INSERT ... RETURNING yields a row, so it runs as a query.
     @Query(value = """
             insert into invoice_sequences (branch_id, fiscal_year, doc_type, next_value) values (:branchId, :fy, :docType, 2)
             on conflict (branch_id, fiscal_year, doc_type) do update set next_value = invoice_sequences.next_value + 1

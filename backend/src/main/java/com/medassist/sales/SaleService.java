@@ -317,6 +317,9 @@ public class SaleService {
         BigDecimal refund = BigDecimal.ZERO;
         BigDecimal taxable = BigDecimal.ZERO;
         BigDecimal tax = BigDecimal.ZERO;
+        ret.setRefundTotal(BigDecimal.ZERO);
+        ret.setTaxableTotal(BigDecimal.ZERO);
+        ret.setTaxTotal(BigDecimal.ZERO);
         returns.save(ret);
 
         for (Map.Entry<UUID, Integer> e : requested.entrySet()) {

@@ -15,7 +15,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
     Optional<Subscription> findByProviderRef(String providerRef);
 
     /** Atomic upsert-and-increment; returns the new count. Safe under concurrent requests. */
-    @Modifying
+    // Not @Modifying: INSERT ... RETURNING yields a row, so it runs as a query.
     @Query(value = """
             insert into usage_counters (org_id, metric, period, count) values (:orgId, :metric, :period, 1)
             on conflict (org_id, metric, period) do update set count = usage_counters.count + 1

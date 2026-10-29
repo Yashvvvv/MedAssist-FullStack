@@ -65,7 +65,7 @@ class SalesFlowTest extends IntegrationTest {
     @Test
     void sellsFirstExpiryFirstWithCorrectGst() throws Exception {
         setUpPharmacy();
-        String dolo = createProduct(owner, "Dolo 650", "OTC", "30.00", "5");
+        String dolo = createProduct(owner, "Dolo 650", "OTC", "33.00", "5");
         String far = LocalDate.now().plusYears(2).toString();
         String near = LocalDate.now().plusMonths(4).toString();
         purchase(dolo, "INV-1", "FAR01:" + far + ":20:22.00", "NEAR01:" + near + ":10:22.00");

@@ -227,7 +227,6 @@ CREATE TABLE stock_batches (
     mrp             NUMERIC(12,2) NOT NULL,
     received_at     TIMESTAMPTZ   NOT NULL,
     created_at      TIMESTAMPTZ   NOT NULL,
-    updated_at      TIMESTAMPTZ   NOT NULL,
     version         BIGINT        NOT NULL DEFAULT 0,
     CONSTRAINT ux_batches_branch_product_batch UNIQUE (branch_id, product_id, batch_no)
 );
@@ -248,8 +247,7 @@ CREATE TABLE stock_movements (
     reference_id    UUID,
     note            VARCHAR(255),
     created_by      UUID,
-    created_at      TIMESTAMPTZ  NOT NULL,
-    updated_at      TIMESTAMPTZ  NOT NULL
+    created_at      TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX ix_movements_org_product ON stock_movements (org_id, product_id, created_at DESC);
 CREATE INDEX ix_movements_reference ON stock_movements (reference_type, reference_id);
@@ -443,8 +441,7 @@ CREATE TABLE notifications (
     read_at       TIMESTAMPTZ,
     scheduled_at  TIMESTAMPTZ   NOT NULL,
     sent_at       TIMESTAMPTZ,
-    created_at    TIMESTAMPTZ   NOT NULL,
-    updated_at      TIMESTAMPTZ   NOT NULL
+    created_at    TIMESTAMPTZ   NOT NULL
 );
 CREATE INDEX ix_notifications_outbox ON notifications (status, scheduled_at) WHERE status = 'PENDING';
 CREATE INDEX ix_notifications_inbox ON notifications (user_id, created_at DESC) WHERE channel = 'IN_APP';
