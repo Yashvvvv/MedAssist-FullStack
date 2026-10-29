@@ -27,14 +27,15 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
             and n.scheduledAt <= :now order by n.scheduledAt""")
     List<Notification> claimDue(Instant now, Pageable pageable);
 
+    /** Staff see their current org's alerts plus personal ones; patients (no org) see everything addressed to them. */
     @Query("""
             select n from Notification n where n.channel = 'IN_APP' and n.userId = :userId
-            and (n.orgId = :orgId or n.orgId is null) order by n.createdAt desc""")
+            and (:orgId is null or n.orgId = :orgId or n.orgId is null) order by n.createdAt desc""")
     Page<Notification> inbox(UUID userId, UUID orgId, Pageable pageable);
 
     @Query("""
             select count(n) from Notification n where n.channel = 'IN_APP' and n.userId = :userId
-            and (n.orgId = :orgId or n.orgId is null) and n.readAt is null""")
+            and (:orgId is null or n.orgId = :orgId or n.orgId is null) and n.readAt is null""")
     long unreadCount(UUID userId, UUID orgId);
 
     @Modifying

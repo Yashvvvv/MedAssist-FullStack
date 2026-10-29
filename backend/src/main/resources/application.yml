@@ -124,7 +124,7 @@ app:
     dispatch-interval: 30s
   jobs:
     refill-reminder-cron: "0 0 9 * * *"     # 09:00 in business-zone
-    expiry-alert-cron: "0 30 8 * * *"
+    expiry-alert-cron: "0 30 8 * * MON"   # weekly digest
   demo:
     enabled: ${DEMO_DATA:false}
 
