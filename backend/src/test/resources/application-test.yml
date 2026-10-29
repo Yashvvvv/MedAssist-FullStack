@@ -1,0 +1,10 @@
+app:
+  rate-limit:
+    auth-per-minute: 10000
+    public-per-minute: 10000
+spring:
+  jpa:
+    show-sql: false
+logging:
+  level:
+    com.medassist: INFO
