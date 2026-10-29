@@ -5,7 +5,7 @@
 - **For pharmacies (B2B SaaS):** GST billing, batch and expiry tracking, purchases, stock across branches, Schedule H/H1 compliance, refill reminders, online orders and reports. Each pharmacy is a separate tenant on its own subscription plan.
 - **For patients (B2C):** find nearby pharmacies, see which one has a medicine in stock, order for pickup or delivery with a prescription photo, and track the order.
 
-> **Status:** the backend (`backend/`) is rebuilt and tested: 34 integration and unit tests against real PostgreSQL. The Android app (`Medassistandroid/`) is next; it is being rebuilt against this API.
+> **Status:** the backend (`backend/`) is rebuilt and tested: 40 integration and unit tests against real PostgreSQL. The Android app (`Medassistandroid/`) is next; it is being rebuilt against this API.
 
 ---
 
@@ -81,7 +81,7 @@ cd backend
 mvn verify        # starts a throwaway PostgreSQL 17 in Docker (Testcontainers)
 ```
 
-The integration tests drive the real HTTP API against real PostgreSQL. They cover tenant isolation (one pharmacy can never read or write another's data), FEFO and GST on sales, concurrent sales of the last units, idempotent checkout, returns, online orders end to end, report figures checked against the invoices behind them, plan limits, the Razorpay webhook signature, scheduled jobs, the notification inbox and the demo seeder. CI runs them on every push ([`.github/workflows/backend.yml`](.github/workflows/backend.yml)).
+The integration tests drive the real HTTP API against real PostgreSQL. They cover tenant isolation (one pharmacy can never read or write another's data), FEFO and GST on sales, concurrent sales of the last units, idempotent checkout, returns, online orders end to end, report figures checked against the invoices behind them, plan limits and AI quotas, staff invitations and role permissions, the Razorpay webhook signature, scheduled jobs, the notification inbox and the demo seeder. CI runs them on every push ([`.github/workflows/backend.yml`](.github/workflows/backend.yml)).
 
 ## Deploy
 
