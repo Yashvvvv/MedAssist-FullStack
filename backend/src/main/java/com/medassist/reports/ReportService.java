@@ -81,7 +81,7 @@ public class ReportService {
                 .orElse(new DayPoint(today, 0, BigDecimal.ZERO));
         Totals month = totals(org, branchId, monthStart, today);
 
-        long lowStock = branchId == null ? 0 : products.lowStock(branchId, today, PageRequest.of(0, 1)).getTotalElements();
+        long lowStock = products.lowStock(branchId, today, PageRequest.of(0, 1)).getTotalElements();
         Object[] expiring = batches.expiringSummary(today, today.plusDays(30), branchId).getFirst();
         long openOrders = orders.countByStatus(CustomerOrder.Status.PLACED) + orders.countByStatus(CustomerOrder.Status.ACCEPTED)
                 + orders.countByStatus(CustomerOrder.Status.READY);
