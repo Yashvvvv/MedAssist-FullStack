@@ -176,31 +176,52 @@ fun StatCard(
     else Card(modifier = modifier, colors = colors) { body() }
 }
 
-/** A minimal bar chart: no chart library for seven bars. */
+/**
+ * A minimal bar chart, no chart library. A week gets wide bars on tracks; a month gets thin bars with no
+ * tracks, so 30 mostly-empty days don't read as a barcode. [axis] labels the first and last bar instead of every bar.
+ */
 @Composable
-fun BarChart(values: List<Float>, labels: List<String>, modifier: Modifier = Modifier, highlightLast: Boolean = true) {
+fun BarChart(
+    values: List<Float>,
+    labels: List<String>,
+    modifier: Modifier = Modifier,
+    highlightLast: Boolean = true,
+    axis: Pair<String, String>? = null,
+) {
     val max = (values.maxOrNull() ?: 0f).coerceAtLeast(1f)
+    val dense = values.size > 12
+    val gap = if (dense) 3.dp else 10.dp
     val barColor = MaterialTheme.colorScheme.primary
-    val dimColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+    val dimColor = MaterialTheme.colorScheme.primary.copy(alpha = if (dense) 0.55f else 0.35f)
     val track = MaterialTheme.colorScheme.surfaceContainerHigh
     Column(modifier) {
-        Row(Modifier.fillMaxWidth().height(120.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth().height(120.dp), horizontalArrangement = Arrangement.spacedBy(gap)) {
             values.forEachIndexed { i, v ->
                 val fraction by animateFloatAsState(v / max, label = "bar")
                 val color = if (highlightLast && i == values.lastIndex) barColor else dimColor
                 Canvas(Modifier.weight(1f).fillMaxSize()) {
-                    val r = CornerRadius(8.dp.toPx())
-                    drawRoundRect(track, size = size, cornerRadius = r)
-                    val h = size.height * fraction
-                    if (h > 0f) drawRoundRect(color, topLeft = Offset(0f, size.height - h), size = Size(size.width, h), cornerRadius = r)
+                    val r = CornerRadius((if (dense) 2.dp else 8.dp).toPx())
+                    if (!dense) drawRoundRect(track, size = size, cornerRadius = r)
+                    // A day with no sales still gets a stub on the baseline, so the gap reads as "zero", not "missing".
+                    val h = if (dense) (size.height * fraction).coerceAtLeast(2.dp.toPx()) else size.height * fraction
+                    val c = if (dense && v == 0f) track else color
+                    if (h > 0f) drawRoundRect(c, topLeft = Offset(0f, size.height - h), size = Size(size.width, h), cornerRadius = r)
                 }
             }
         }
         Spacer(Modifier.height(6.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            labels.forEach {
-                Text(it, Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+        val labelStyle = MaterialTheme.typography.labelSmall
+        val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        if (axis != null) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(axis.first, Modifier.weight(1f), style = labelStyle, color = labelColor)
+                Text(axis.second, style = labelStyle, color = labelColor)
+            }
+        } else if (labels.any { it.isNotBlank() }) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                labels.forEach {
+                    Text(it, Modifier.weight(1f), style = labelStyle, textAlign = TextAlign.Center, color = labelColor, maxLines = 1)
+                }
             }
         }
     }

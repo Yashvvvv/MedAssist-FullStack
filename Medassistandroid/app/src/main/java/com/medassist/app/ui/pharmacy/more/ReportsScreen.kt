@@ -121,7 +121,11 @@ private fun ReportsBody(r: Reports) {
                 KeyValueRow("Average bill", s.averageBill.rupees())
                 if (s.byDay.size in 2..31) {
                     Spacer(Modifier.height(12.dp))
-                    BarChart(s.byDay.map { it.revenue.toFloat() }, s.byDay.map { if (s.byDay.size <= 7) it.date.asShortDate() else "" })
+                    BarChart(
+                        s.byDay.map { it.revenue.toFloat() },
+                        s.byDay.map { it.date.asShortDate() },
+                        axis = if (s.byDay.size > 7) s.byDay.first().date.asShortDate() to s.byDay.last().date.asShortDate() else null,
+                    )
                 }
             }
         }
@@ -136,7 +140,7 @@ private fun ReportsBody(r: Reports) {
         }
         if (s.byPaymentMode.isNotEmpty()) item {
             ReportCard("Payments") {
-                s.byPaymentMode.forEach { KeyValueRow("${it.paymentMode.lowercase().replaceFirstChar { c -> c.uppercase() }} (${it.invoices})", it.amount.rupees()) }
+                s.byPaymentMode.forEach { KeyValueRow("${paymentLabel(it.paymentMode)} (${it.invoices})", it.amount.rupees()) }
             }
         }
         if (s.topProducts.isNotEmpty()) item {
@@ -168,3 +172,7 @@ private fun ReportCard(title: String, content: @Composable () -> Unit) {
         }
     }
 }
+
+/** "UPI" is an acronym; the others read as words. */
+private fun paymentLabel(mode: String): String =
+    if (mode == "UPI") mode else mode.lowercase().replaceFirstChar { it.uppercase() }
