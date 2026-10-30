@@ -73,9 +73,13 @@ jobs:
           disable-animations: true
           working-directory: Medassistandroid
           # The debug build talks to http://10.0.2.2:8080 = the backend on this runner.
+          # One shell line per step: the runner executes each line separately.
           script: |
-            ./gradlew connectedDebugAndroidTest || (adb logcat -d > ../logcat.txt; exit 1)
+            ./gradlew connectedDebugAndroidTest || touch ../e2e-failed
             adb pull /sdcard/Android/data/com.medassist.app.debug/files/screens ../screens || true
+            adb exec-out screencap -p > ../last-screen.png || true
+            adb logcat -d > ../logcat.txt || true
+            test ! -f ../e2e-failed
       - name: Pull screenshots after a failure
         if: failure()
         run: echo "see artifacts"
@@ -85,5 +89,6 @@ jobs:
           name: e2e-screens
           path: |
             screens/
+            last-screen.png
             logcat.txt
             Medassistandroid/app/build/reports/androidTests/

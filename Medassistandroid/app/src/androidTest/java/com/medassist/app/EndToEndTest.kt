@@ -134,6 +134,7 @@ class EndToEndTest {
     // ------------------------------------------------------------------ helpers
 
     private fun logIn(demoButton: String) {
+        ensureSignedOut()
         waitFor("Get started")
         shot("00-welcome")
         compose.onNode(hasText("Log in") and hasClickAction()).performClick()
@@ -165,7 +166,29 @@ class EndToEndTest {
     }
 
     private fun waitFor(text: String) {
-        compose.waitUntil(timeout) { compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
+        try {
+            compose.waitUntil(timeout) { compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
+        } catch (e: Throwable) {
+            runCatching { shot("FAIL-waiting-for-${text.replace(Regex("[^A-Za-z0-9]"), "_")}") }
+            throw AssertionError("Timed out waiting for \"$text\"", e)
+        }
+    }
+
+    /** Tests share the app's stored session; start each one signed out, whatever the last one left behind. */
+    private fun ensureSignedOut() {
+        compose.waitUntil(timeout) {
+            listOf("Get started", "Today's sales", "Pharmacies near you", "More", "Account").any {
+                compose.onAllNodesWithText(it).fetchSemanticsNodes().isNotEmpty()
+            }
+        }
+        if (compose.onAllNodesWithText("Get started").fetchSemanticsNodes().isNotEmpty()) return
+        if (compose.onAllNodes(hasText("More") and hasClickAction()).fetchSemanticsNodes().isNotEmpty()) {
+            tab("More")
+            click("Account & settings")
+        } else {
+            tab("Account")
+        }
+        confirmLogOut()
     }
 
     private fun waitForAny(text: String) = waitFor(text)
