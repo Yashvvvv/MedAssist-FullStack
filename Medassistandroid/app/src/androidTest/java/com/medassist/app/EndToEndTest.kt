@@ -120,7 +120,8 @@ class EndToEndTest {
         compose.onNode(hasSetTextAction() and hasText("Mobile number")).performTextInput("9888800000")
         shotAll("11-order-checkout")
         compose.onNode(hasText("Place order") and hasClickAction()).performClick()
-        waitFor("Waiting for pharmacy")
+        waitFor("Order placed")
+        waitFor("Being prepared")
         shot("12-order-tracking")
 
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
