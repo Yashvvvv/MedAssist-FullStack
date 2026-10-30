@@ -36,6 +36,7 @@ import androidx.lifecycle.viewModelScope
 import com.medassist.app.core.model.SaleView
 import com.medassist.app.core.model.toApiError
 import com.medassist.app.core.repository.SalesRepository
+import com.medassist.app.ui.common.paymentLabel
 import com.medassist.app.ui.common.DetailScaffold
 import com.medassist.app.ui.common.KeyValueRow
 import com.medassist.app.ui.common.RxBadge
@@ -108,7 +109,7 @@ private fun InvoiceBody(sale: SaleView) {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(sale.invoiceNo, style = MaterialTheme.typography.titleMedium)
-                        Text("${sale.createdAt.asDateTime()} · ${sale.paymentMode.lowercase().replaceFirstChar { it.uppercase() }}",
+                        Text("${sale.createdAt.asDateTime()} · ${paymentLabel(sale.paymentMode)}",
                             style = MaterialTheme.typography.bodySmall)
                     }
                     Text(sale.total.rupees(), style = MaterialTheme.typography.titleLarge.merge(Numeric))

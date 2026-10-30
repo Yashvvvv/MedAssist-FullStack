@@ -56,3 +56,7 @@ fun Double.km(): String = when {
 
 /** Today as the server's business date (India), for report ranges. */
 fun todayIst(): LocalDate = LocalDate.now(ZoneId.of("Asia/Kolkata"))
+
+/** How a payment mode reads on screen: "UPI" is an acronym, the others are words ("Cash", "Card", "Credit"). */
+fun paymentLabel(mode: String): String =
+    if (mode.equals("UPI", ignoreCase = true)) "UPI" else mode.lowercase().replaceFirstChar { it.uppercase() }

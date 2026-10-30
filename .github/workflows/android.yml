@@ -75,6 +75,7 @@ jobs:
           # The debug build talks to http://10.0.2.2:8080 = the backend on this runner.
           # One shell line per step: the runner executes each line separately.
           script: |
+            adb shell settings put global hide_error_dialogs 1
             ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true || touch ../e2e-failed
             adb pull /sdcard/Android/data/com.medassist.app.debug/files/screens ../screens || true
             adb exec-out screencap -p > ../last-screen.png || true

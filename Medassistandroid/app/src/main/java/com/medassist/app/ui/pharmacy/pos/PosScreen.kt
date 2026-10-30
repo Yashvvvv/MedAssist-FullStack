@@ -74,6 +74,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.medassist.app.core.model.PaymentMode
 import com.medassist.app.core.model.ProductView
+import com.medassist.app.ui.common.paymentLabel
 import com.medassist.app.ui.common.EmptyState
 import com.medassist.app.ui.common.KeyValueRow
 import com.medassist.app.ui.common.PrimaryButton
@@ -322,7 +323,7 @@ private fun CheckoutSheet(s: PosState, vm: PosViewModel) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
             PaymentMode.entries.forEach { mode ->
                 FilterChip(selected = s.paymentMode == mode, onClick = { vm.setPayment(mode) },
-                    label = { Text(mode.name.lowercase().replaceFirstChar { it.uppercase() }) })
+                    label = { Text(paymentLabel(mode.name)) })
             }
         }
         Spacer(Modifier.height(8.dp))

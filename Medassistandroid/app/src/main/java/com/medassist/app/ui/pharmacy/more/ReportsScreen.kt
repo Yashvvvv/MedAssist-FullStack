@@ -28,6 +28,7 @@ import com.medassist.app.core.model.GstSummary
 import com.medassist.app.core.model.SalesSummary
 import com.medassist.app.core.model.toApiError
 import com.medassist.app.core.repository.InsightsRepository
+import com.medassist.app.ui.common.paymentLabel
 import com.medassist.app.ui.common.BarChart
 import com.medassist.app.ui.common.DetailScaffold
 import com.medassist.app.ui.common.EmptyState
@@ -172,7 +173,3 @@ private fun ReportCard(title: String, content: @Composable () -> Unit) {
         }
     }
 }
-
-/** "UPI" is an acronym; the others read as words. */
-private fun paymentLabel(mode: String): String =
-    if (mode == "UPI") mode else mode.lowercase().replaceFirstChar { it.uppercase() }
