@@ -1,0 +1,1 @@
+{"detail":"ADVANCED_REPORTS is not included in the FREE plan","instance":"/api/v1/reports/sales","status":402,"title":"Payment Required","code":"PLAN_FEATURE_UNAVAILABLE","details":{"feature":"ADVANCED_REPORTS","plan":"FREE"}}

@@ -1,0 +1,1 @@
+{"detail":"Validation failed","instance":"/api/v1/sales","status":400,"title":"Bad Request","code":"VALIDATION_FAILED","errors":{"lines":"must not be empty"}}
