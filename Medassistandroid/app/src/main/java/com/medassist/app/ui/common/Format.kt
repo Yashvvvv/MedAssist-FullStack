@@ -47,7 +47,12 @@ fun String.asRelative(now: Instant = Instant.now()): String = runCatching {
     }
 }.getOrDefault(this)
 
-fun Double.km(): String = if (this < 1) "${(this * 1000).toInt()} m" else String.format(IndianLocale, "%.1f km", this)
+/** "Under 100 m" rather than "0 m" or "7 m": location fixes aren't that precise. */
+fun Double.km(): String = when {
+    this < 0.1 -> "Under 100 m"
+    this < 1 -> "${((this * 1000) / 50).toInt() * 50} m"
+    else -> String.format(IndianLocale, "%.1f km", this)
+}
 
 /** Today as the server's business date (India), for report ranges. */
 fun todayIst(): LocalDate = LocalDate.now(ZoneId.of("Asia/Kolkata"))

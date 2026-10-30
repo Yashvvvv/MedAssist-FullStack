@@ -228,10 +228,12 @@ class EndToEndTest {
         save(compose.onAllNodes(isRoot()).onFirst(), name)
     }
 
-    /** The top-most window (bottom sheets and dialogs are windows of their own). */
+    /** Everything on screen, including bottom sheets and dialogs. */
     private fun shotAll(name: String) {
         compose.waitForIdle()
         Thread.sleep(600) // let the sheet finish sliding in
-        save(compose.onAllNodes(isRoot()).onLast(), name)
+        // The whole display: a bottom sheet is its own window, and the Compose root order doesn't say which is on top.
+        val bmp = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot() ?: return
+        File(dir(), "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
