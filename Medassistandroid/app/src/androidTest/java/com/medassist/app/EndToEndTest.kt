@@ -2,6 +2,7 @@ package com.medassist.app
 
 import android.Manifest
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.printToLog
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -166,13 +168,31 @@ class EndToEndTest {
         compose.waitForIdle()
     }
 
+    private fun present(text: String): Boolean =
+        compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() ||
+            compose.onAllNodesWithText(text, substring = true, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+
     private fun waitFor(text: String) {
         try {
-            compose.waitUntil(timeout) { compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(timeout) { present(text) }
         } catch (e: Throwable) {
             runCatching { shot("FAIL-waiting-for-${text.replace(Regex("[^A-Za-z0-9]"), "_")}") }
+            dumpTrees()
             throw AssertionError("Timed out waiting for \"$text\"", e)
         }
+    }
+
+    /** Every window's semantics tree, merged and unmerged, to logcat (tag E2E) for diagnosing a failed wait. */
+    private fun dumpTrees() {
+        runCatching {
+            val roots = compose.onAllNodes(isRoot())
+            val n = roots.fetchSemanticsNodes().size
+            Log.e("E2E", "roots: $n")
+            for (i in 0 until n) {
+                roots[i].printToLog("E2E-merged-$i")
+                compose.onAllNodes(isRoot(), useUnmergedTree = true)[i].printToLog("E2E-unmerged-$i")
+            }
+        }.onFailure { Log.e("E2E", "dump failed", it) }
     }
 
     /** Tests share the app's stored session; start each one signed out, whatever the last one left behind. */
