@@ -77,9 +77,10 @@ jobs:
           script: |
             adb shell settings put global hide_error_dialogs 1
             ./gradlew connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true || touch ../e2e-failed
-            adb pull /sdcard/Android/data/com.medassist.app.debug/files/screens ../screens || true
-            adb exec-out screencap -p > ../last-screen.png || true
-            adb logcat -d > ../logcat.txt || true
+            # If the emulator dies, adb logcat blocks on "waiting for device" and || true cannot save it.
+            timeout 60 adb pull /sdcard/Android/data/com.medassist.app.debug/files/screens ../screens || true
+            timeout 60 adb exec-out screencap -p > ../last-screen.png || true
+            timeout 60 adb logcat -d > ../logcat.txt || true
             test ! -f ../e2e-failed
       - name: Pull screenshots after a failure
         if: failure()
