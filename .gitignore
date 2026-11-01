@@ -19,3 +19,6 @@ local.properties
 *.log
 logs/
 backend/data/
+
+# Kotlin compiler scratch
+.kotlin/
