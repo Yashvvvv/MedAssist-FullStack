@@ -1,0 +1,1 @@
+{"from":"2026-10-01","to":"2026-10-30","gstin":"09ABCDE1234F1Z5","byRate":[{"rate":5,"taxable":5390.50,"cgst":134.89,"sgst":134.61,"returnedTaxable":0.00,"returnedTax":0.00,"netTaxable":5390.50,"netTax":269.50}],"byHsn":[{"hsnCode":"30049099","rate":5,"quantity":96,"taxable":5390.50,"cgst":134.89,"sgst":134.61}],"totalNetTaxable":5390.50,"totalNetTax":269.50}

@@ -1,0 +1,1 @@
+{"detail":"Session expired, log in again","instance":"/api/v1/auth/refresh","status":401,"title":"Unauthorized","code":"INVALID_REFRESH_TOKEN"}

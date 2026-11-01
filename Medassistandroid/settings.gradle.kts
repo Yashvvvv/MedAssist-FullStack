@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MedAssist-Android"
+rootProject.name = "MedAssist"
 include(":app")

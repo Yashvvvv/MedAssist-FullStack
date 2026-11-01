@@ -1,0 +1,1 @@
+{"detail":"Only 40 unit(s) of Dolo 650 in stock","instance":"/api/v1/sales","status":409,"title":"Conflict","code":"INSUFFICIENT_STOCK","details":{"requested":9999,"available":40,"productId":"01a18b08-05cb-7bb2-a9bb-ae7d5eaa5c26"}}

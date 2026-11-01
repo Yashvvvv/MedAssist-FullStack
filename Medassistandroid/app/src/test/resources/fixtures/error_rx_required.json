@@ -1,0 +1,1 @@
+{"detail":"Upload a photo of your prescription for prescription medicines","instance":"/api/v1/me/orders","status":422,"title":"Unprocessable Content","code":"PRESCRIPTION_REQUIRED"}
