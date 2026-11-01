@@ -1,0 +1,21 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Secrets
+.env
+*.keystore
+*.jks
+google-services.json
+
+# Build output
+target/
+build/
+.gradle/
+local.properties
+
+# Runtime
+*.log
+logs/
+backend/data/
