@@ -1,0 +1,1 @@
+{"accessToken":"test-accessToken","accessTokenExpiresAt":"2026-10-30T04:34:12.928557089Z","refreshToken":"test-refreshToken","refreshTokenExpiresAt":"2026-11-29T04:19:12.929166252Z","user":{"id":"01a18b08-0eef-7b41-b32a-2ae60a977526","email":"patient@medassist.app","fullName":"Demo Patient","phone":"9888800000","emailVerified":false},"memberships":[]}

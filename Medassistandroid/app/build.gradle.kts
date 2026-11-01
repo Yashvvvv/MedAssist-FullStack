@@ -1,179 +1,126 @@
 import java.util.Properties
-import java.io.FileInputStream
-import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+// Release signing: keystore.properties (never committed) or env vars in CI. Without them the
+// release build is simply unsigned, so `assembleRelease` still works on any machine.
+val signing = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+fun signingValue(key: String, env: String): String? = signing.getProperty(key) ?: System.getenv(env)
+
 android {
-    namespace = "com.example.medassist_android"
+    namespace = "com.medassist.app"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.medassist_android"
+        applicationId = "com.medassist.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
-
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // Read the API key from local.properties
-        val localProperties = Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localProperties.load(FileInputStream(localPropertiesFile))
-        }
-        val mapsApiKey = localProperties.getProperty("maps.apiKey", "YOUR_API_KEY_HERE")
-
-        // Use manifestPlaceholders to provide the key to the AndroidManifest
-        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = mapsApiKey
-
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
-        buildConfigField("String", "AUTH_URL", "\"http://10.0.2.2:8080/\"")
-
-        vectorDrawables {
-            useSupportLibrary = true
+    signingConfigs {
+        val storeFile = signingValue("storeFile", "MEDASSIST_KEYSTORE")
+        if (storeFile != null) {
+            create("release") {
+                this.storeFile = rootProject.file(storeFile)
+                storePassword = signingValue("storePassword", "MEDASSIST_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "MEDASSIST_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "MEDASSIST_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
+        // Debug talks to a backend on this computer: 10.0.2.2 is the host as seen from the emulator.
+        // On a USB phone run `adb reverse tcp:8080 tcp:8080` and set medassist.apiBaseUrl=http://localhost:8080/api/v1,
+        // or point it at the deployed API, in local.properties.
         debug {
-            isMinifyEnabled = false
+            val apiBaseUrl = localProperties.getProperty("medassist.apiBaseUrl", "http://10.0.2.2:8080/api/v1")
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+            applicationIdSuffix = ".debug"
+        }
+        release {
+            val apiBaseUrl = localProperties.getProperty("medassist.releaseApiBaseUrl")
+                ?: System.getenv("MEDASSIST_API_BASE_URL")
+                ?: "https://medassist-api.onrender.com/api/v1"
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
     }
-
     buildFeatures {
         compose = true
         buildConfig = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 
 dependencies {
-    // Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-
-    // Compose BOM - This ensures all Compose dependencies are compatible
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation("androidx.compose.material:material-icons-extended-android:1.7.8")
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.datastore.preferences)
 
-    // Hilt Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.hilt.navigation.compose)
-    implementation(libs.hilt.work)
     ksp(libs.hilt.compiler)
-    ksp(libs.hilt.ext.compiler)
+    implementation(libs.hilt.navigation.compose)
 
-    // Room Database
-    implementation(libs.bundles.room)
-    ksp(libs.room.compiler)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.kotlinx.serialization.json)
 
-    // Networking - Updated to use proper KSP configuration
-    implementation(libs.bundles.networking)
-    implementation(libs.retrofit.converter.gson)
-
-    // Moshi KSP configuration - ensure we're using the correct processor
-    ksp(libs.moshi.codegen)
-
-    // Navigation
-    implementation(libs.navigation.compose)
-
-    // Lifecycle
-    implementation(libs.bundles.lifecycle)
-
-    // Coroutines
-    implementation(libs.bundles.coroutines)
-
-    // CameraX
-    implementation(libs.bundles.camerax)
-
-    // Google Maps
-    implementation(libs.bundles.maps)
-
-    // Image Loading
     implementation(libs.coil.compose)
+    implementation(libs.play.services.location)
+    implementation(libs.play.services.code.scanner)
 
-    // Data Storage
-    implementation(libs.datastore.preferences)
-    implementation(libs.security.crypto)
-
-    // Work Manager
-    implementation(libs.work.runtime.ktx)
-
-    // Permissions
-    implementation(libs.permissions.compose)
-
-    // UI/UX
-    implementation(libs.lottie.compose)
-
-    // Logging
-    implementation(libs.timber)
-
-    // Debug
-    debugImplementation(libs.leakcanary.android)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    // Testing
     testImplementation(libs.junit)
-    testImplementation(libs.bundles.testing)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    androidTestImplementation(libs.navigation.testing)
-    androidTestImplementation(libs.work.runtime.ktx)
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
-    kspAndroidTest(libs.hilt.compiler)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.junit)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
-
-
-// TODO: Add the following to your project's `build.gradle.kts` file if you are using Hilt for dependency injection.
-//afterEvaluate {
-//    if (project.extensions.findByType<ApplicationExtension>() != null) {
-//        project.extensions.configure<ApplicationExtension> {
-//            if (buildTypes.findByName("release")?.isMinifyEnabled == true) {
-//                tasks.named("kspReleaseKotlin") {
-//                    dependsOn(tasks.named("minifyReleaseWithR8"))
-//                }
-//            }
-//        }
-//    }
-//}
