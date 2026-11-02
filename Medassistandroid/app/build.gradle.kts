@@ -57,7 +57,7 @@ android {
         release {
             val apiBaseUrl = localProperties.getProperty("medassist.releaseApiBaseUrl")
                 ?: System.getenv("MEDASSIST_API_BASE_URL")
-                ?: "https://medassist-api.onrender.com/api/v1"
+                ?: "https://medassist-api-jq5q.onrender.com/api/v1"
             buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
             isMinifyEnabled = true
             isShrinkResources = true

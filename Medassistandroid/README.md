@@ -58,7 +58,7 @@ Decisions worth knowing:
    - Against a deployed API: `medassist.apiBaseUrl=https://<your-api>/api/v1`.
 3. On the login screen tap **Pharmacy demo** or **Customer demo** (password `Demo@12345`).
 
-Release builds use `medassist.releaseApiBaseUrl` from `local.properties` (or the `MEDASSIST_API_BASE_URL` env var), defaulting to `https://medassist-api.onrender.com/api/v1`.
+Release builds use `medassist.releaseApiBaseUrl` from `local.properties` (or the `MEDASSIST_API_BASE_URL` env var), defaulting to the deployed API, `https://medassist-api-jq5q.onrender.com/api/v1`.
 
 ## Tests
 
