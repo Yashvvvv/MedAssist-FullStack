@@ -5,12 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.medassist.app.data.ThemeMode
 import com.medassist.app.ui.AppRoot
 import com.medassist.app.ui.account.SessionViewModel
+import com.medassist.app.ui.theme.AppLook
 import com.medassist.app.ui.theme.MedAssistTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,12 +23,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val theme by sessionViewModel.theme.collectAsStateWithLifecycle()
-            val dark = when (theme) {
-                ThemeMode.SYSTEM -> isSystemInDarkTheme()
-                ThemeMode.LIGHT -> false
-                ThemeMode.DARK -> true
-            }
-            MedAssistTheme(darkTheme = dark) { AppRoot(sessionViewModel) }
+            // Sign-in and splash use the patient look; AppRoot switches staff to the Counter Pro look.
+            MedAssistTheme(look = AppLook.Patient, mode = theme) { AppRoot(sessionViewModel) }
         }
     }
 }

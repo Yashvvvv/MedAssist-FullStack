@@ -12,11 +12,7 @@ import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.PointOfSale
 import androidx.compose.material.icons.rounded.ShoppingBag
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -32,6 +28,8 @@ import androidx.navigation.navArgument
 import com.medassist.app.ui.account.AccountScreen
 import com.medassist.app.ui.account.NotificationsScreen
 import com.medassist.app.ui.account.SessionViewModel
+import com.medassist.app.ui.common.AppNavigationBar
+import com.medassist.app.ui.common.NavItem
 import com.medassist.app.ui.pharmacy.more.MoreScreen
 import com.medassist.app.ui.pharmacy.more.PlanScreen
 import com.medassist.app.ui.pharmacy.more.ReportsScreen
@@ -63,17 +61,11 @@ fun PharmacyApp(sessionViewModel: SessionViewModel) {
     Scaffold(
         bottomBar = {
             if (onTab) {
-                NavigationBar {
-                    Tab.entries.forEach { tab ->
-                        val selected = route == tab.route
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { nav.switchTab(tab.route) },
-                            icon = { Icon(if (selected) tab.selected else tab.icon, null) },
-                            label = { Text(tab.label) },
-                        )
-                    }
-                }
+                AppNavigationBar(
+                    items = Tab.entries.map { NavItem(it.label, it.icon, it.selected) },
+                    selected = Tab.entries.indexOfFirst { it.route == route },
+                    onSelect = { nav.switchTab(Tab.entries[it].route) },
+                )
             }
         },
     ) { padding ->

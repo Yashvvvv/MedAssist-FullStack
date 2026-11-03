@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.pos
 
+import com.medassist.app.ui.theme.Mono
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -108,7 +109,7 @@ private fun InvoiceBody(sale: SaleView) {
                     Icon(Icons.Rounded.CheckCircle, null, tint = LocalStatusColors.current.success)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(sale.invoiceNo, style = MaterialTheme.typography.titleMedium)
+                        Text(sale.invoiceNo, style = MaterialTheme.typography.titleMedium.merge(Mono))
                         Text("${sale.createdAt.asDateTime()} · ${paymentLabel(sale.paymentMode)}",
                             style = MaterialTheme.typography.bodySmall)
                     }

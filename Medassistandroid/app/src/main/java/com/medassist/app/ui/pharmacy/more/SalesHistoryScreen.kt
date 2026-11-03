@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.more
 
+import com.medassist.app.ui.theme.Mono
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,7 +81,7 @@ fun SalesHistoryScreen(onBack: () -> Unit, onOpen: (String) -> Unit, vm: SalesHi
                     items(list, key = { it.id }) { sale ->
                         ListItem(
                             modifier = Modifier.clickable { onOpen(sale.id) },
-                            headlineContent = { Text(sale.invoiceNo) },
+                            headlineContent = { Text(sale.invoiceNo, style = MaterialTheme.typography.titleSmall.merge(Mono)) },
                             supportingContent = {
                                 Text(listOfNotNull(sale.customerName, sale.createdAt.asDateTime(), "${sale.lines.size} item(s)").joinToString(" · "))
                             },

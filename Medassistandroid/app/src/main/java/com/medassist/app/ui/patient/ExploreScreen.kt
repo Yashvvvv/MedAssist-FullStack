@@ -6,6 +6,30 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.font.FontWeight
+import com.medassist.app.ui.common.AppCard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,20 +44,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Directions
 import androidx.compose.material.icons.outlined.LocalPharmacy
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Medication
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -144,6 +163,7 @@ fun ExploreScreen(
     onPharmacy: (String) -> Unit,
     onMedicine: (String) -> Unit,
     onNotifications: () -> Unit,
+    onScan: () -> Unit = {},
     vm: ExploreViewModel = hiltViewModel(),
 ) {
     val point by vm.point.collectAsStateWithLifecycle()
@@ -155,55 +175,89 @@ fun ExploreScreen(
     LaunchedEffect(Unit) {
         if (point == null) permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION) else vm.load()
     }
+    val scheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("Find medicines")
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
-                            permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
-                        }) {
-                            Icon(Icons.Outlined.LocationOn, null, Modifier.padding(end = 2.dp), tint = MaterialTheme.colorScheme.primary)
-                            Text(point?.label ?: "Locating…", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                        }
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = scheme.background),
+                title = { Text("Find medicines", style = MaterialTheme.typography.headlineSmall) },
+                actions = {
+                    Surface(
+                        onClick = onNotifications,
+                        shape = MaterialTheme.shapes.small,
+                        color = scheme.surfaceContainerLowest,
+                        shadowElevation = 1.dp,
+                        modifier = Modifier.padding(end = 12.dp).size(42.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Notifications, "Notifications") }
                     }
                 },
-                actions = { IconButton(onClick = onNotifications) { Icon(Icons.Outlined.Notifications, "Notifications") } },
             )
         },
     ) { padding ->
-        LazyColumn(Modifier.padding(padding), contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyColumn(Modifier.padding(padding), contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                OutlinedTextField(
+                Surface(
+                    onClick = { permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
+                    shape = CircleShape,
+                    color = scheme.primaryContainer,
+                    contentColor = scheme.primary,
+                ) {
+                    Row(Modifier.padding(start = 8.dp, end = 12.dp, top = 5.dp, bottom = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Rounded.LocationOn, null, Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(point?.label ?: "Locating…", style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
+            item {
+                TextField(
                     query, vm::onQuery,
                     placeholder = { Text("Search a medicine or salt, e.g. Dolo 650") },
                     leadingIcon = { Icon(Icons.Outlined.Search, null) },
                     trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { vm.onQuery("") }) { Icon(Icons.Rounded.Close, "Clear") } },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.extraLarge,
-                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = scheme.surfaceContainerLowest,
+                        unfocusedContainerColor = scheme.surfaceContainerLowest,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                    ),
+                    modifier = Modifier.fillMaxWidth().shadow(1.dp, MaterialTheme.shapes.medium)
+                        .border(1.5.dp, if (query.isNotEmpty()) scheme.primary else Color.Transparent, MaterialTheme.shapes.medium),
                 )
             }
             if (medicines.isNotEmpty()) {
-                items(medicines, key = { "m" + it.id }) { m ->
-                    ListItem(
-                        modifier = Modifier.clickable { onMedicine(m.id) },
-                        leadingContent = { Icon(Icons.Outlined.Medication, null, tint = MaterialTheme.colorScheme.primary) },
-                        headlineContent = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(m.name)
-                                if (m.prescriptionRequired) { Spacer(Modifier.width(8.dp)); RxBadge() }
-                            }
-                        },
-                        supportingContent = { Text(listOfNotNull(m.saltComposition, m.packSize).joinToString(" · "), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                        trailingContent = { Text("Who has it?", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary) },
-                    )
+                item {
+                    AppCard {
+                        medicines.forEachIndexed { i, m ->
+                            if (i > 0) HorizontalDivider(color = scheme.outlineVariant, modifier = Modifier.padding(start = 64.dp))
+                            ListItem(
+                                modifier = Modifier.clickable { onMedicine(m.id) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                leadingContent = {
+                                    Box(Modifier.size(36.dp).clip(MaterialTheme.shapes.small).background(scheme.primaryContainer), contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Outlined.Medication, null, tint = scheme.primary, modifier = Modifier.size(20.dp))
+                                    }
+                                },
+                                headlineContent = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(m.name, style = MaterialTheme.typography.titleSmall)
+                                        if (m.prescriptionRequired) { Spacer(Modifier.width(8.dp)); RxBadge() }
+                                    }
+                                },
+                                supportingContent = { Text(listOfNotNull(m.saltComposition, m.packSize).joinToString(" · "), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                                trailingContent = { Text("Who has it?", style = MaterialTheme.typography.labelMedium, color = scheme.primary) },
+                            )
+                        }
+                    }
                 }
             } else {
+                item { ScanPromo(onScan) }
                 item {
-                    Text("Pharmacies near you", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                    Text("Pharmacies near you", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 6.dp))
                 }
                 when (val s = pharmacies) {
                     UiState.Loading -> item { LoadingBox(Modifier.height(200.dp)) }
@@ -229,27 +283,75 @@ fun ExploreScreen(
     }
 }
 
+/** The AI entry point, given a soft teal-to-blue card so it reads as a feature, not a list row. */
+@Composable
+private fun ScanPromo(onScan: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val dark = scheme.background.luminance() < 0.5f
+    val brush = if (dark) Brush.linearGradient(listOf(scheme.primaryContainer, scheme.tertiaryContainer))
+    else Brush.linearGradient(listOf(Color(0xFFE2F6F1), Color(0xFFD6ECFB)))
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(brush).clickable(onClick = onScan).padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Surface(shape = MaterialTheme.shapes.small, color = scheme.surfaceContainerLowest, modifier = Modifier.size(46.dp)) {
+            Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.PhotoCamera, null, tint = scheme.primary) }
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Not sure what a medicine is?", style = MaterialTheme.typography.titleSmall)
+            Text("Snap the strip: uses, warnings and cheaper same-salt options.", style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant)
+        }
+        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = scheme.onSurfaceVariant)
+    }
+}
+
 @Composable
 fun PharmacyCard(p: PharmacyView, onClick: () -> Unit) {
     val context = LocalContext.current
-    Card(onClick = onClick, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)) {
+    val scheme = MaterialTheme.colorScheme
+    AppCard(onClick = onClick) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    Text(p.pharmacyName ?: p.name, style = MaterialTheme.typography.titleMedium)
+                    Text(p.pharmacyName ?: p.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
                     Text(listOfNotNull(p.name.takeIf { p.pharmacyName != null }, p.addressLine, p.city).joinToString(", "),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
+                        style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 2)
                 }
-                p.distanceKm?.let { Text(it.km(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary) }
+                p.distanceKm?.let {
+                    Spacer(Modifier.width(8.dp))
+                    Text(it.km(), style = MaterialTheme.typography.labelMedium, color = scheme.primary,
+                        modifier = Modifier.clip(MaterialTheme.shapes.extraSmall).background(scheme.primaryContainer).padding(horizontal = 8.dp, vertical = 3.dp))
+                }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (p.open24x7) StatusPill("Open 24×7", Tone.Success) else p.openingHours?.let { StatusPill(it, Tone.Neutral) }
                 if (p.deliveryAvailable) StatusPill("Delivers", Tone.Brand)
-                Spacer(Modifier.weight(1f))
-                if (p.latitude != null && p.longitude != null) {
-                    AssistChip(onClick = { openInMaps(context, p.latitude, p.longitude, p.pharmacyName ?: p.name) },
-                        label = { Text("Directions") }, leadingIcon = { Icon(Icons.Outlined.Directions, null) })
+            }
+            val hasMap = p.latitude != null && p.longitude != null
+            if (hasMap || p.phone != null) {
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    p.phone?.let { phone ->
+                        Button(
+                            onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))) } },
+                            shape = MaterialTheme.shapes.small,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(Icons.Outlined.Call, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Call")
+                        }
+                    }
+                    if (hasMap) {
+                        FilledTonalButton(
+                            onClick = { openInMaps(context, p.latitude!!, p.longitude!!, p.pharmacyName ?: p.name) },
+                            shape = MaterialTheme.shapes.small,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(Icons.Outlined.Directions, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Directions")
+                        }
+                    }
                 }
             }
         }

@@ -10,11 +10,7 @@ import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.ShoppingBag
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +24,8 @@ import androidx.navigation.navArgument
 import com.medassist.app.ui.account.AccountScreen
 import com.medassist.app.ui.account.NotificationsScreen
 import com.medassist.app.ui.account.SessionViewModel
+import com.medassist.app.ui.common.AppNavigationBar
+import com.medassist.app.ui.common.NavItem
 import com.medassist.app.ui.pharmacy.switchTab
 
 private enum class Tab(val route: String, val label: String, val icon: ImageVector, val selected: ImageVector) {
@@ -46,17 +44,11 @@ fun PatientApp(sessionViewModel: SessionViewModel) {
     Scaffold(
         bottomBar = {
             if (Tab.entries.any { it.route == route }) {
-                NavigationBar {
-                    Tab.entries.forEach { tab ->
-                        val selected = route == tab.route
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { nav.switchTab(tab.route) },
-                            icon = { Icon(if (selected) tab.selected else tab.icon, null) },
-                            label = { Text(tab.label) },
-                        )
-                    }
-                }
+                AppNavigationBar(
+                    items = Tab.entries.map { NavItem(it.label, it.icon, it.selected) },
+                    selected = Tab.entries.indexOfFirst { it.route == route },
+                    onSelect = { nav.switchTab(Tab.entries[it].route) },
+                )
             }
         },
     ) { padding ->
@@ -66,6 +58,7 @@ fun PatientApp(sessionViewModel: SessionViewModel) {
                     onPharmacy = { nav.navigate("pharmacy/$it") },
                     onMedicine = { nav.navigate("medicine/$it") },
                     onNotifications = { nav.navigate("notifications") },
+                    onScan = { nav.switchTab(Tab.Scan.route) },
                 )
             }
             composable(Tab.Orders.route) { MyOrdersScreen(onOpen = { nav.navigate("track/$it") }, onExplore = { nav.switchTab(Tab.Explore.route) }) }
