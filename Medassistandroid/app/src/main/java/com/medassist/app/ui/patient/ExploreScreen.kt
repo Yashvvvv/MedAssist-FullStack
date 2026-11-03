@@ -1,5 +1,14 @@
 package com.medassist.app.ui.patient
 
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.fillMaxSize
+import com.medassist.app.ui.common.Eyebrow
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
@@ -177,185 +186,167 @@ fun ExploreScreen(
     }
     val scheme = MaterialTheme.colorScheme
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = scheme.background),
-                title = { Text("Find medicines", style = MaterialTheme.typography.headlineSmall) },
-                actions = {
-                    Surface(
-                        onClick = onNotifications,
-                        shape = MaterialTheme.shapes.small,
-                        color = scheme.surfaceContainerLowest,
-                        shadowElevation = 1.dp,
-                        modifier = Modifier.padding(end = 12.dp).size(42.dp),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Notifications, "Notifications") }
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        LazyColumn(Modifier.padding(padding), contentPadding = PaddingValues(16.dp, 0.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item {
-                Surface(
-                    onClick = { permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
-                    shape = CircleShape,
-                    color = scheme.primaryContainer,
-                    contentColor = scheme.primary,
+    // Wellness Paper: no app bar. An eyebrow line (location, account actions), an editorial serif headline,
+    // then the page reads top to bottom on cream with hairline dividers instead of cards.
+    LazyColumn(
+        Modifier.fillMaxSize().background(scheme.background).statusBarsPadding(),
+        contentPadding = PaddingValues(bottom = 24.dp),
+    ) {
+        item {
+            Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier.clip(CircleShape).clickable { permission.launch(Manifest.permission.ACCESS_COARSE_LOCATION) }
+                        .padding(vertical = 6.dp, horizontal = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(Modifier.padding(start = 8.dp, end = 12.dp, top = 5.dp, bottom = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Rounded.LocationOn, null, Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(point?.label ?: "Locating…", style = MaterialTheme.typography.labelMedium)
-                    }
+                    Icon(Icons.Outlined.LocationOn, null, Modifier.size(15.dp), tint = scheme.onSurfaceVariant)
+                    Spacer(Modifier.width(4.dp))
+                    Eyebrow((point?.label ?: "Locating…").uppercase())
                 }
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = onNotifications) { Icon(Icons.Outlined.Notifications, "Notifications", tint = scheme.secondary) }
             }
-            item {
-                TextField(
-                    query, vm::onQuery,
-                    placeholder = { Text("Search a medicine or salt", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = { Icon(Icons.Outlined.Search, null) },
-                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { vm.onQuery("") }) { Icon(Icons.Rounded.Close, "Clear") } },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = scheme.surfaceContainerLowest,
-                        unfocusedContainerColor = scheme.surfaceContainerLowest,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    modifier = Modifier.fillMaxWidth().shadow(1.dp, MaterialTheme.shapes.medium)
-                        .border(1.5.dp, if (query.isNotEmpty()) scheme.primary else Color.Transparent, MaterialTheme.shapes.medium),
-                )
-            }
-            if (medicines.isNotEmpty()) {
-                item {
-                    AppCard {
-                        medicines.forEachIndexed { i, m ->
-                            if (i > 0) HorizontalDivider(color = scheme.outlineVariant, modifier = Modifier.padding(start = 64.dp))
-                            ListItem(
-                                modifier = Modifier.clickable { onMedicine(m.id) },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                leadingContent = {
-                                    Box(Modifier.size(36.dp).clip(MaterialTheme.shapes.small).background(scheme.primaryContainer), contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Outlined.Medication, null, tint = scheme.primary, modifier = Modifier.size(20.dp))
-                                    }
-                                },
-                                headlineContent = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(m.name, style = MaterialTheme.typography.titleSmall)
-                                        if (m.prescriptionRequired) { Spacer(Modifier.width(8.dp)); RxBadge() }
-                                    }
-                                },
-                                supportingContent = { Text(listOfNotNull(m.saltComposition, m.packSize).joinToString(" · "), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                trailingContent = { Text("Who has it?", style = MaterialTheme.typography.labelMedium, color = scheme.primary) },
-                            )
+        }
+        item {
+            Text("The right medicine,\nclose to home.", style = MaterialTheme.typography.displaySmall,
+                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp))
+        }
+        item {
+            TextField(
+                query, vm::onQuery,
+                placeholder = { Text("Search a medicine or salt", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { vm.onQuery("") }) { Icon(Icons.Rounded.Close, "Clear") } },
+                singleLine = true,
+                shape = CircleShape,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = scheme.surfaceContainerLowest,
+                    unfocusedContainerColor = scheme.surfaceContainerLowest,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp)
+                    .border(1.dp, if (query.isNotEmpty()) scheme.primary else scheme.outlineVariant, CircleShape),
+            )
+        }
+        if (medicines.isNotEmpty()) {
+            item { HorizontalDivider(color = scheme.outlineVariant) }
+            items(medicines, key = { "m" + it.id }) { m ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { onMedicine(m.id) }.padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(m.name, style = MaterialTheme.typography.titleLarge)
+                            if (m.prescriptionRequired) { Spacer(Modifier.width(8.dp)); RxBadge() }
                         }
+                        Text(listOfNotNull(m.saltComposition, m.packSize).joinToString(" · "), style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
+                    Text("Who has it?", style = MaterialTheme.typography.labelLarge, color = scheme.primary)
                 }
-            } else {
-                item { ScanPromo(onScan) }
-                item {
-                    Text("Pharmacies near you", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 6.dp))
-                }
-                when (val s = pharmacies) {
-                    UiState.Loading -> item { LoadingBox(Modifier.height(200.dp)) }
-                    is UiState.Error -> item { ErrorBox(s.error, vm::load, Modifier.height(300.dp)) }
-                    is UiState.Success -> if (s.data.isEmpty()) {
-                        item {
-                            Column {
-                                EmptyState(
-                                    Icons.Outlined.LocalPharmacy, "No MedAssist pharmacies within ${radius.toInt()} km",
-                                    "Search a wider area, or try the demo area in Noida.",
-                                    Modifier.height(280.dp),
-                                )
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                                    if (radius < 50) TextButton(onClick = vm::widen) { Text("Search ${(radius * 3).coerceAtMost(50.0).toInt()} km") }
-                                    TextButton(onClick = vm::useDemo) { Text("Use demo area") }
-                                }
+                HorizontalDivider(color = scheme.outlineVariant)
+            }
+        } else {
+            item { ScanPromo(onScan) }
+            item {
+                Eyebrow("Pharmacies near you", Modifier.padding(start = 20.dp, top = 24.dp, bottom = 6.dp).semantics { heading() })
+            }
+            when (val s = pharmacies) {
+                UiState.Loading -> item { LoadingBox(Modifier.height(200.dp)) }
+                is UiState.Error -> item { ErrorBox(s.error, vm::load, Modifier.height(300.dp)) }
+                is UiState.Success -> if (s.data.isEmpty()) {
+                    item {
+                        Column {
+                            EmptyState(
+                                Icons.Outlined.LocalPharmacy, "No MedAssist pharmacies within ${radius.toInt()} km",
+                                "Search a wider area, or try the demo area in Noida.",
+                                Modifier.height(280.dp),
+                            )
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                                if (radius < 50) TextButton(onClick = vm::widen) { Text("Search ${(radius * 3).coerceAtMost(50.0).toInt()} km") }
+                                TextButton(onClick = vm::useDemo) { Text("Use demo area") }
                             }
                         }
-                    } else items(s.data, key = { it.branchId }) { PharmacyCard(it) { onPharmacy(it.branchId) } }
+                    }
+                } else {
+                    item { HorizontalDivider(color = scheme.outlineVariant) }
+                    items(s.data, key = { it.branchId }) { PharmacyCard(it) { onPharmacy(it.branchId) } }
                 }
             }
         }
     }
 }
 
-/** The AI entry point, given a soft teal-to-blue card so it reads as a feature, not a list row. */
+/** The AI entry point as an editorial card: a sage-to-olive band with a serif title, then one plain sentence. */
 @Composable
 private fun ScanPromo(onScan: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val dark = scheme.background.luminance() < 0.5f
-    val brush = if (dark) Brush.linearGradient(listOf(scheme.primaryContainer, scheme.tertiaryContainer))
-    else Brush.linearGradient(listOf(Color(0xFFE2F6F1), Color(0xFFD6ECFB)))
-    Row(
-        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).background(brush).clickable(onClick = onScan).padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = 20.dp).clip(MaterialTheme.shapes.large)
+            .background(scheme.surfaceContainerLowest).clickable(onClick = onScan),
     ) {
-        Surface(shape = MaterialTheme.shapes.small, color = scheme.surfaceContainerLowest, modifier = Modifier.size(46.dp)) {
-            Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.PhotoCamera, null, tint = scheme.primary) }
+        Box(
+            Modifier.fillMaxWidth().height(104.dp)
+                .background(Brush.linearGradient(listOf(Color(0xFFCED4B8), Color(0xFF849671), Color(0xFF5C6F5D)))),
+        ) {
+            Text("Know your strip", style = MaterialTheme.typography.headlineSmall, color = Color.White,
+                modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 12.dp))
+            Icon(Icons.Outlined.PhotoCamera, null, tint = Color.White, modifier = Modifier.align(Alignment.TopEnd).padding(14.dp))
         }
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text("Not sure what a medicine is?", style = MaterialTheme.typography.titleSmall)
-            Text("Snap the strip: uses, warnings and cheaper same-salt options.", style = MaterialTheme.typography.bodySmall,
-                color = scheme.onSurfaceVariant)
-        }
-        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = scheme.onSurfaceVariant)
+        Text(
+            "Photograph any medicine to learn what it's for, how to take it, and cheaper same-salt options.",
+            style = MaterialTheme.typography.bodyMedium, color = scheme.secondary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+        )
     }
 }
 
+/** A pharmacy as an editorial list entry: serif name, distance in action blue, plain facts, two quiet pill actions. */
 @Composable
 fun PharmacyCard(p: PharmacyView, onClick: () -> Unit) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
-    AppCard(onClick = onClick) {
-        Column(Modifier.fillMaxWidth().padding(16.dp)) {
-            Row(verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) {
-                    Text(p.pharmacyName ?: p.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
-                    Text(listOfNotNull(p.name.takeIf { p.pharmacyName != null }, p.addressLine, p.city).joinToString(", "),
-                        style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 2)
-                }
-                p.distanceKm?.let {
-                    Spacer(Modifier.width(8.dp))
-                    Text(it.km(), style = MaterialTheme.typography.labelMedium, color = scheme.primary,
-                        modifier = Modifier.clip(MaterialTheme.shapes.extraSmall).background(scheme.primaryContainer).padding(horizontal = 8.dp, vertical = 3.dp))
-                }
+    Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Row(verticalAlignment = Alignment.Top) {
+            Text(p.pharmacyName ?: p.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            p.distanceKm?.let {
+                Spacer(Modifier.width(8.dp))
+                Eyebrow(it.km().uppercase(), Modifier.padding(top = 6.dp), color = scheme.primary)
             }
-            Spacer(Modifier.height(10.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (p.open24x7) StatusPill("Open 24×7", Tone.Success) else p.openingHours?.let { StatusPill(it, Tone.Neutral) }
-                if (p.deliveryAvailable) StatusPill("Delivers", Tone.Brand)
-            }
-            val hasMap = p.latitude != null && p.longitude != null
-            if (hasMap || p.phone != null) {
-                Spacer(Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    p.phone?.let { phone ->
-                        Button(
-                            onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))) } },
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(Icons.Outlined.Call, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Call")
-                        }
-                    }
-                    if (hasMap) {
-                        FilledTonalButton(
-                            onClick = { openInMaps(context, p.latitude!!, p.longitude!!, p.pharmacyName ?: p.name) },
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(Icons.Outlined.Directions, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Directions")
-                        }
-                    }
+        }
+        Text(listOfNotNull(p.name.takeIf { p.pharmacyName != null }, p.addressLine, p.city).joinToString(", "),
+            style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 2)
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (p.open24x7) StatusPill("Open 24×7", Tone.Success) else p.openingHours?.let { StatusPill(it, Tone.Neutral) }
+            if (p.deliveryAvailable) StatusPill("Delivers", Tone.Brand)
+        }
+        val hasMap = p.latitude != null && p.longitude != null
+        if (hasMap || p.phone != null) {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                p.phone?.let { phone ->
+                    OutlinedButton(
+                        onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))) } },
+                        shape = CircleShape,
+                        border = BorderStroke(1.dp, scheme.secondary),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.secondary),
+                    ) { Icon(Icons.Outlined.Call, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Call") }
+                }
+                if (hasMap) {
+                    OutlinedButton(
+                        onClick = { openInMaps(context, p.latitude!!, p.longitude!!, p.pharmacyName ?: p.name) },
+                        shape = CircleShape,
+                        border = BorderStroke(1.dp, scheme.secondary),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.secondary),
+                    ) { Icon(Icons.Outlined.Directions, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("Directions") }
                 }
             }
         }
     }
+    HorizontalDivider(color = scheme.outlineVariant)
 }
 
 /** Hands navigation to Google Maps (or any maps app): no Maps SDK or API key in this app. */

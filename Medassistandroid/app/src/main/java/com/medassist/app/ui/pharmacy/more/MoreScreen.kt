@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.more
 
+import com.medassist.app.ui.common.appBarColors
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -43,7 +44,7 @@ fun MoreScreen(
     val session by sessionViewModel.session.collectAsStateWithLifecycle()
     val role = (session as? Session.SignedIn)?.role
     val tokens = (session as? Session.SignedIn)?.tokens
-    Scaffold(topBar = { TopAppBar(title = { Text("More") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(colors = appBarColors(), title = { Text("More") }) }) { padding ->
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             tokens?.let {
                 ListItem(

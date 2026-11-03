@@ -26,6 +26,7 @@ fun DetailScaffold(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = appBarColors(),
                 title = { Text(title) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back") } },
                 actions = actions,

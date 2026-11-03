@@ -1,5 +1,7 @@
 package com.medassist.app.ui.pharmacy.stock
 
+import com.medassist.app.ui.theme.AppButtonShape
+import com.medassist.app.ui.common.appBarColors
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -127,6 +129,7 @@ fun StockScreen(onReceive: () -> Unit, onImport: () -> Unit, vm: StockViewModel 
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = appBarColors(),
                 title = {
                     Column {
                         Text("Stock")
@@ -137,7 +140,7 @@ fun StockScreen(onReceive: () -> Unit, onImport: () -> Unit, vm: StockViewModel 
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = onReceive, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Receive stock") })
+            ExtendedFloatingActionButton(shape = AppButtonShape, onClick = onReceive, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Receive stock") })
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {

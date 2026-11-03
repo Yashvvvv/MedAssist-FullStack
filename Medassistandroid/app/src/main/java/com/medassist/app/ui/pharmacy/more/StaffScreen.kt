@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.more
 
+import com.medassist.app.ui.theme.AppButtonShape
 import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -108,7 +109,7 @@ fun StaffScreen(onBack: () -> Unit, onUpgrade: () -> Unit, vm: StaffViewModel = 
         "Staff",
         onBack,
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { inviting = true }, icon = { Icon(Icons.Rounded.PersonAdd, null) }, text = { Text("Invite") })
+            ExtendedFloatingActionButton(shape = AppButtonShape, onClick = { inviting = true }, icon = { Icon(Icons.Rounded.PersonAdd, null) }, text = { Text("Invite") })
         },
     ) { padding ->
             Column(Modifier.padding(padding)) {

@@ -1,5 +1,6 @@
 package com.medassist.app.ui.patient
 
+import com.medassist.app.ui.common.appBarColors
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -131,7 +132,7 @@ fun ScanScreen(onMedicine: (String) -> Unit, vm: ScanViewModel = hiltViewModel()
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let(vm::identify) }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok -> if (ok) captureUri?.let(vm::identify) }
 
-    Scaffold(topBar = { TopAppBar(title = { Text("AI medicine help") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(colors = appBarColors(), title = { Text("AI medicine help") }) }) { padding ->
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Column(Modifier.padding(16.dp)) {

@@ -1,5 +1,13 @@
 package com.medassist.app.ui.pharmacy.pos
 
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextField
+import com.medassist.app.ui.theme.Mono
+import com.medassist.app.ui.common.ChoiceRow
+import com.medassist.app.ui.theme.AppButtonShape
+import com.medassist.app.ui.common.appBarColors
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -115,6 +123,7 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = appBarColors(),
                 title = { Text("New bill") },
                 actions = {
                     if (s.cart.isNotEmpty()) TextButton(onClick = vm::clearCart) { Text("Clear") }
@@ -123,50 +132,54 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
         },
         bottomBar = {
             if (s.cart.isNotEmpty()) {
-                // Counter Pro bill bar: running total on the left, one big action on the right.
-                Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
-                    Column {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f).clip(MaterialTheme.shapes.small).clickable { showCart = true }.padding(vertical = 2.dp)) {
-                                Text("${s.itemCount} item(s) · tap to review", style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(s.total.rupees(), style = MaterialTheme.typography.headlineSmall.merge(Numeric))
-                            }
-                            PrimaryButton("Checkout", { showCheckout = true })
+                // Carbon split action bar: a secondary "review" cell and the primary "checkout" cell, full width.
+                Row(Modifier.fillMaxWidth().height(64.dp)) {
+                    Column(
+                        Modifier.weight(1f).fillMaxHeight().background(MaterialTheme.colorScheme.inverseSurface)
+                            .clickable { showCart = true }.padding(horizontal = 16.dp, vertical = 10.dp),
+                    ) {
+                        Text("Review", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.inverseOnSurface)
+                        Text("${s.itemCount} item(s)", style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f))
+                    }
+                    Row(
+                        Modifier.weight(1.4f).fillMaxHeight().background(MaterialTheme.colorScheme.primary)
+                            .clickable { showCheckout = true }.padding(horizontal = 16.dp, vertical = 10.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Checkout", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimary)
+                            Text(s.total.rupees(), style = MaterialTheme.typography.titleMedium.merge(Numeric), color = MaterialTheme.colorScheme.onPrimary)
                         }
+                        Icon(Icons.AutoMirrored.Rounded.ArrowForward, null, tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            OutlinedTextField(
+            TextField(
                 value = s.query,
                 onValueChange = vm::onQuery,
-                placeholder = { Text("Search medicine, salt or SKU") },
+                label = { Text("Product") },
+                placeholder = { Text("Medicine, salt or SKU") },
                 leadingIcon = { Icon(Icons.Outlined.Search, null) },
                 trailingIcon = {
                     IconButton(onClick = { scan() }) { Icon(Icons.Outlined.QrCodeScanner, "Scan barcode") }
                 },
                 singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                shape = RectangleShape,
+                colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
                 ),
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             )
             if (s.results.isNotEmpty()) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    Text("Product", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                    Text("Price", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Text("Item", style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
+                    Text("Price", style = MaterialTheme.typography.labelMedium)
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             }
             if (s.searching && s.results.isEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
@@ -206,7 +219,7 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
     }
 }
 
-/** A dense counter row: name + Rx, salt and rack underneath, price right-aligned; rows already in the bill get a green edge. */
+/** A Carbon table row: name + Rx, salt and rack underneath, price right-aligned in mono; rows in the bill are selected (blue edge, tint). */
 @Composable
 private fun ProductRow(p: ProductView, inCart: Int, onAdd: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
@@ -214,7 +227,7 @@ private fun ProductRow(p: ProductView, inCart: Int, onAdd: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .clickable(onClick = onAdd)
-            .background(if (inCart > 0) scheme.primary.copy(alpha = 0.07f) else androidx.compose.ui.graphics.Color.Transparent)
+            .background(if (inCart > 0) scheme.primaryContainer.copy(alpha = 0.45f) else androidx.compose.ui.graphics.Color.Transparent)
             .height(IntrinsicSize.Min),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -237,7 +250,7 @@ private fun ProductRow(p: ProductView, inCart: Int, onAdd: () -> Unit) {
             )
         }
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 16.dp)) {
-            Text(p.sellingPrice.rupees(), style = MaterialTheme.typography.titleSmall.merge(Numeric))
+            Text(p.sellingPrice.rupees(), style = MaterialTheme.typography.bodyMedium.merge(Mono))
             if (inCart > 0) {
                 Text("× $inCart in bill", style = MaterialTheme.typography.labelSmall, color = scheme.primary)
             } else {
@@ -336,7 +349,7 @@ private fun CheckoutSheet(s: PosState, vm: PosViewModel) {
                         }
                     } else {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = {
+                            OutlinedButton(shape = AppButtonShape, onClick = {
                                 val file = vm.newCaptureFile()
                                 val uri = FileProvider.getUriForFile(context, context.packageName + ".files", file)
                                 captureUri = uri
@@ -346,7 +359,7 @@ private fun CheckoutSheet(s: PosState, vm: PosViewModel) {
                                 Spacer(Modifier.width(6.dp))
                                 Text("Camera")
                             }
-                            OutlinedButton(onClick = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
+                            OutlinedButton(shape = AppButtonShape, onClick = { pick.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
                                 Icon(Icons.Outlined.Image, null)
                                 Spacer(Modifier.width(6.dp))
                                 Text("Gallery")
@@ -361,17 +374,12 @@ private fun CheckoutSheet(s: PosState, vm: PosViewModel) {
 
         Spacer(Modifier.height(16.dp))
         Text("Payment", style = MaterialTheme.typography.titleSmall)
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 6.dp)) {
-            PaymentMode.entries.forEachIndexed { i, mode ->
-                SegmentedButton(
-                    selected = s.paymentMode == mode,
-                    onClick = { vm.setPayment(mode) },
-                    shape = SegmentedButtonDefaults.itemShape(i, PaymentMode.entries.size, MaterialTheme.shapes.small),
-                    icon = {},
-                    label = { Text(paymentLabel(mode.name), maxLines = 1) },
-                )
-            }
-        }
+        ChoiceRow(
+            options = PaymentMode.entries.map { paymentLabel(it.name) },
+            selected = PaymentMode.entries.indexOf(s.paymentMode),
+            onSelect = { vm.setPayment(PaymentMode.entries[it]) },
+            modifier = Modifier.padding(top = 6.dp),
+        )
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {

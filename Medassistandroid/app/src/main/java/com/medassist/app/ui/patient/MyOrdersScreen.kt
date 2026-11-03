@@ -1,5 +1,6 @@
 package com.medassist.app.ui.patient
 
+import com.medassist.app.ui.common.appBarColors
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -88,7 +89,7 @@ fun MyOrdersScreen(onOpen: (String) -> Unit, onExplore: () -> Unit, vm: MyOrders
     val state by vm.state.collectAsStateWithLifecycle()
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.load() }
-    Scaffold(topBar = { TopAppBar(title = { Text("My orders") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(colors = appBarColors(), title = { Text("My orders") }) }) { padding ->
         PullToRefreshBox(refreshing, { vm.load(pull = true) }, Modifier.padding(padding)) {
             when (val s = state) {
                 UiState.Loading -> LoadingBox()

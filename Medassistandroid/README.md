@@ -21,12 +21,15 @@ Both modes have notifications, light/dark theme, and switching between pharmacie
 
 ### Design
 
-Each mode has its own look, chosen at sign-in in `AppRoot` (`ui/theme/Theme.kt`, `AppLook`):
+Each mode has its own look, chosen at sign-in in `AppRoot` (`ui/theme/Theme.kt`, `AppLook`). Both follow the light/dark setting.
 
-- **Pharmacy: "Counter Pro".** Dark-first slate with a green accent, Inter, hairline-bordered tiles, dense rows. A 2×2 KPI grid, a 7-day chart with gridlines and a "needs attention" queue on Home, and a price-column product list and segmented payment picker on Sell. When the theme is set to follow the system, the pharmacy mode is still dark. An explicit Light choice gets a light Counter Pro palette.
-- **Customer: "Clinical Calm".** Light-first teal, Plus Jakarta Sans, soft white cards, a feature card for the AI scan, and pharmacy cards with Call / Directions.
+- **Pharmacy: "Carbon Grid"** (after IBM's Carbon design system). White and grey layers, square corners, IBM Plex Sans + Mono, one interactive blue and a dark header.
+  - Home: breadcrumb, a full-bleed 2×2 tile grid on 1dp gutters, the week's revenue on gridlines, and a work-queue table.
+  - Sell: a filled search field with a bottom border, a table-style product list with mono prices, a split Review / Checkout action bar, and a content switcher for the payment mode.
+- **Customer: "Wellness Paper"** (after Oura). Cream paper, Newsreader (a light editorial serif) for headings over Geist, earth tones, and one action blue.
+  - Explore: a serif headline, a pill search, an editorial "Know your strip" card for the AI scan, and pharmacies as a hairline-divided list with Call / Directions.
 
-Shared pieces that adapt to the look: `AppCard`, `AppNavigationBar`, `StatCard`, `BarChart`, `PrimaryButton`. Fonts are bundled in `res/font`, subset to Latin + ₹ (Inter, Plus Jakarta Sans, JetBrains Mono; all SIL Open Font License 1.1).
+Shared pieces that adapt to the look: `AppCard`, `AppNavigationBar`, `appBarColors()`, `ChoiceRow`, `StatCard`, `BarChart`, `PrimaryButton`, `AppButtonShape`. Fonts are bundled in `res/font`, subset to Latin + ₹ (IBM Plex Sans/Mono, Newsreader, Geist; all SIL Open Font License 1.1).
 
 ## Architecture
 

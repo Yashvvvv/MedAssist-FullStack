@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.orders
 
+import com.medassist.app.ui.common.appBarColors
 import com.medassist.app.ui.theme.Mono
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -98,7 +99,7 @@ fun OrdersScreen(onOpen: (String) -> Unit, vm: OrdersViewModel = hiltViewModel()
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.load() } // also refreshes when coming back from an order
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Online orders") }) }) { padding ->
+    Scaffold(topBar = { TopAppBar(colors = appBarColors(), title = { Text("Online orders") }) }) { padding ->
         Column(Modifier.padding(padding)) {
             PrimaryTabRow(selectedTabIndex = filter.ordinal) {
                 OrderFilter.entries.forEach { f -> Tab(selected = f == filter, onClick = { vm.select(f) }, text = { Text(f.label) }) }

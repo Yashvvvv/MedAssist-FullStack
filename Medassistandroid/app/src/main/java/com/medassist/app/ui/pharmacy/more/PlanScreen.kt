@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.more
 
+import com.medassist.app.ui.theme.AppButtonShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -143,7 +144,7 @@ fun PlanScreen(onBack: () -> Unit, vm: PlanViewModel = hiltViewModel()) {
                                 p.features.mapNotNull { FeatureNames[it] }.forEach { Text("✓ $it", style = MaterialTheme.typography.bodyMedium) }
                                 if (!current) {
                                     Spacer(Modifier.height(12.dp))
-                                    if (p.plan == Plan.FREE) OutlinedButton(onClick = { vm.choose(p.plan) }, modifier = Modifier.fillMaxWidth()) { Text("Switch to Free") }
+                                    if (p.plan == Plan.FREE) OutlinedButton(shape = AppButtonShape, onClick = { vm.choose(p.plan) }, modifier = Modifier.fillMaxWidth()) { Text("Switch to Free") }
                                     else PrimaryButton("Choose ${p.plan.name}", { vm.choose(p.plan) }, Modifier.fillMaxWidth(), loading = busy == p.plan)
                                 }
                             }

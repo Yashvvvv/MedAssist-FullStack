@@ -1,5 +1,6 @@
 package com.medassist.app.ui.account
 
+import com.medassist.app.ui.theme.AppButtonShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -129,7 +130,7 @@ fun AccountScreen(sessionViewModel: SessionViewModel, onBack: (() -> Unit)?) {
                 }
             }
             HorizontalDivider()
-            OutlinedButton(onClick = { confirmLogout = true }, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(shape = AppButtonShape, onClick = { confirmLogout = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.AutoMirrored.Outlined.Logout, null)
                 Spacer(Modifier.width(8.dp))
                 Text("Log out")

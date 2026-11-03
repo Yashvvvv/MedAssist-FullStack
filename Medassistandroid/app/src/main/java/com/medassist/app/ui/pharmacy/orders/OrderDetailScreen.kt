@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.orders
 
+import com.medassist.app.ui.theme.AppButtonShape
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -142,7 +143,7 @@ fun OrderDetailScreen(onBack: () -> Unit, onInvoice: (String) -> Unit, vm: Order
             if (order != null && order.status.isOpen) {
                 Surface(tonalElevation = 3.dp) {
                     Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedButton(onClick = { rejecting = true }, enabled = !busy, modifier = Modifier.weight(1f).height(52.dp)) { Text("Reject") }
+                        OutlinedButton(shape = AppButtonShape, onClick = { rejecting = true }, enabled = !busy, modifier = Modifier.weight(1f).height(52.dp)) { Text("Reject") }
                         when (order.status) {
                             OrderStatus.PLACED -> PrimaryButton("Accept", vm::accept, Modifier.weight(1f), loading = busy)
                             OrderStatus.ACCEPTED -> PrimaryButton(
@@ -191,7 +192,7 @@ fun OrderDetailScreen(onBack: () -> Unit, onInvoice: (String) -> Unit, vm: Order
                     Text("This bills the order as a normal sale: stock is taken first-expiry-first and a GST invoice is created.")
                     Spacer(Modifier.height(12.dp))
                     PaymentMode.entries.filter { it != PaymentMode.CREDIT }.forEach { mode ->
-                        OutlinedButton(onClick = { completing = false; vm.complete(mode) }, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                        OutlinedButton(shape = AppButtonShape, onClick = { completing = false; vm.complete(mode) }, modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                             Text(mode.name.lowercase().replaceFirstChar { it.uppercase() })
                         }
                     }
@@ -238,7 +239,7 @@ private fun OrderBody(o: OrderView, onInvoice: (String) -> Unit, onPrescription:
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(o.contactPhone, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    OutlinedButton(onClick = { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${o.contactPhone}"))) }) {
+                    OutlinedButton(shape = AppButtonShape, onClick = { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${o.contactPhone}"))) }) {
                         Icon(Icons.Outlined.Call, null)
                         Spacer(Modifier.width(6.dp))
                         Text("Call")
@@ -246,7 +247,7 @@ private fun OrderBody(o: OrderView, onInvoice: (String) -> Unit, onPrescription:
                 }
                 o.prescriptionId?.let { rxId ->
                     Spacer(Modifier.height(8.dp))
-                    OutlinedButton(onClick = { onPrescription(rxId) }, modifier = Modifier.fillMaxWidth()) { Text("View prescription photo") }
+                    OutlinedButton(shape = AppButtonShape, onClick = { onPrescription(rxId) }, modifier = Modifier.fillMaxWidth()) { Text("View prescription photo") }
                     Text("Check it before handing over Rx medicines.", style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -259,6 +260,6 @@ private fun OrderBody(o: OrderView, onInvoice: (String) -> Unit, onPrescription:
                 KeyValueRow(if (o.saleId != null) "Billed" else "Estimated total", o.estimatedTotal.rupees(), strong = true)
             }
         }
-        o.saleId?.let { saleId -> OutlinedButton(onClick = { onInvoice(saleId) }, modifier = Modifier.fillMaxWidth()) { Text("View invoice") } }
+        o.saleId?.let { saleId -> OutlinedButton(shape = AppButtonShape, onClick = { onInvoice(saleId) }, modifier = Modifier.fillMaxWidth()) { Text("View invoice") } }
     }
 }
