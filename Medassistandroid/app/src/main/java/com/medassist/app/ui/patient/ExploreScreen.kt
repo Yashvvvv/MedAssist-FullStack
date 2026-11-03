@@ -214,7 +214,7 @@ fun ExploreScreen(
             item {
                 TextField(
                     query, vm::onQuery,
-                    placeholder = { Text("Search a medicine or salt, e.g. Dolo 650") },
+                    placeholder = { Text("Search a medicine or salt", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     leadingIcon = { Icon(Icons.Outlined.Search, null) },
                     trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { vm.onQuery("") }) { Icon(Icons.Rounded.Close, "Clear") } },
                     singleLine = true,
