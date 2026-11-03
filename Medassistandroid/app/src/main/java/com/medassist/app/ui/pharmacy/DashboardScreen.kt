@@ -74,8 +74,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import com.medassist.app.core.auth.Session
-import com.medassist.app.core.auth.SessionManager
 import com.medassist.app.core.model.BranchView
 import com.medassist.app.core.model.Dashboard
 import com.medassist.app.core.model.OrganizationView
@@ -99,9 +97,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -109,7 +104,6 @@ class DashboardViewModel @Inject constructor(
     private val insights: InsightsRepository,
     private val pharmacy: PharmacyRepository,
     private val context: PharmacyContext,
-    session: SessionManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<UiState<Dashboard>>(UiState.Loading)
@@ -126,9 +120,6 @@ class DashboardViewModel @Inject constructor(
 
     val branches = context.branches
     val branch = context.branch
-    val userName: StateFlow<String> = session.session
-        .map { (it as? Session.SignedIn)?.tokens?.fullName?.substringBefore(" ").orEmpty() }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
     /** "Whole pharmacy" (null) or one branch; the dashboard is the one screen that can show all branches. */
     private val _scope = MutableStateFlow<String?>(null)
