@@ -1,5 +1,6 @@
 package com.medassist.app.ui.pharmacy.orders
 
+import com.medassist.app.ui.theme.Mono
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -131,7 +132,7 @@ fun OrderCard(order: OrderView, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.padding(start = 8.dp))
-                Text(order.orderNo, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                Text(order.orderNo, style = MaterialTheme.typography.titleSmall.merge(Mono), modifier = Modifier.weight(1f))
                 OrderStatusPill(order)
             }
             Spacer(Modifier.height(8.dp))

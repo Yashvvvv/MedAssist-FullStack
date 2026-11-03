@@ -19,6 +19,15 @@ It talks to the Spring Boot API in [`../backend`](../backend). The API contract 
 
 Both modes have notifications, light/dark theme, and switching between pharmacies (or into customer mode) for people who work at more than one.
 
+### Design
+
+Each mode has its own look, chosen at sign-in in `AppRoot` (`ui/theme/Theme.kt`, `AppLook`):
+
+- **Pharmacy: "Counter Pro".** Dark-first slate with a green accent, Inter, hairline-bordered tiles, dense rows. A 2×2 KPI grid, a 7-day chart with gridlines and a "needs attention" queue on Home, and a price-column product list and segmented payment picker on Sell. When the theme is set to follow the system, the pharmacy mode is still dark. An explicit Light choice gets a light Counter Pro palette.
+- **Customer: "Clinical Calm".** Light-first teal, Plus Jakarta Sans, soft white cards, a feature card for the AI scan, and pharmacy cards with Call / Directions.
+
+Shared pieces that adapt to the look: `AppCard`, `AppNavigationBar`, `StatCard`, `BarChart`, `PrimaryButton`. Fonts are bundled in `res/font`, subset to Latin + ₹ (Inter, Plus Jakarta Sans, JetBrains Mono; all SIL Open Font License 1.1).
+
 ## Architecture
 
 Single module, the same layout as VenueSync:

@@ -4,7 +4,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,21 +38,23 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -64,6 +70,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -116,13 +123,22 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
         },
         bottomBar = {
             if (s.cart.isNotEmpty()) {
-                BottomAppBar {
-                    Column(Modifier.weight(1f).clickable { showCart = true }.padding(start = 8.dp)) {
-                        Text("${s.itemCount} item(s) · tap to review", style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(s.total.rupees(), style = MaterialTheme.typography.titleLarge.merge(Numeric))
+                // Counter Pro bill bar: running total on the left, one big action on the right.
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
+                    Column {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f).clip(MaterialTheme.shapes.small).clickable { showCart = true }.padding(vertical = 2.dp)) {
+                                Text("${s.itemCount} item(s) · tap to review", style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(s.total.rupees(), style = MaterialTheme.typography.headlineSmall.merge(Numeric))
+                            }
+                            PrimaryButton("Checkout", { showCheckout = true })
+                        }
                     }
-                    PrimaryButton("Checkout", { showCheckout = true }, Modifier.padding(end = 8.dp))
                 }
             }
         },
@@ -137,9 +153,21 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
                     IconButton(onClick = { scan() }) { Icon(Icons.Outlined.QrCodeScanner, "Scan barcode") }
                 },
                 singleLine = true,
-                shape = MaterialTheme.shapes.extraLarge,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             )
+            if (s.results.isNotEmpty()) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Text("Product", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    Text("Price", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
             if (s.searching && s.results.isEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.Center) { CircularProgressIndicator() }
             } else if (s.results.isEmpty()) {
@@ -178,33 +206,46 @@ fun PosScreen(onInvoice: (String) -> Unit, vm: PosViewModel = hiltViewModel()) {
     }
 }
 
+/** A dense counter row: name + Rx, salt and rack underneath, price right-aligned; rows already in the bill get a green edge. */
 @Composable
 private fun ProductRow(p: ProductView, inCart: Int, onAdd: () -> Unit) {
-    ListItem(
-        modifier = Modifier.clickable(onClick = onAdd),
-        headlineContent = {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onAdd)
+            .background(if (inCart > 0) scheme.primary.copy(alpha = 0.07f) else androidx.compose.ui.graphics.Color.Transparent)
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.width(3.dp).fillMaxHeight().background(if (inCart > 0) scheme.primary else androidx.compose.ui.graphics.Color.Transparent))
+        Column(Modifier.weight(1f).padding(start = 13.dp, top = 11.dp, bottom = 11.dp, end = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(p.name, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text(p.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false))
                 if (p.schedule.requiresPrescription) {
                     Spacer(Modifier.width(8.dp))
                     RxBadge()
                 }
             }
-        },
-        supportingContent = {
             Text(
                 listOfNotNull(p.saltComposition, p.packSize, p.rackLocation?.let { "Rack $it" }).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-        },
-        trailingContent = {
-            Column(horizontalAlignment = Alignment.End) {
-                Text(p.sellingPrice.rupees(), style = MaterialTheme.typography.titleSmall.merge(Numeric))
-                if (inCart > 0) Text("× $inCart in bill", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+        }
+        Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 16.dp)) {
+            Text(p.sellingPrice.rupees(), style = MaterialTheme.typography.titleSmall.merge(Numeric))
+            if (inCart > 0) {
+                Text("× $inCart in bill", style = MaterialTheme.typography.labelSmall, color = scheme.primary)
+            } else {
+                Text("MRP ${p.mrp.rupees()}", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
             }
-        },
-    )
+        }
+    }
+    HorizontalDivider(color = scheme.outlineVariant)
 }
 
 @Composable
@@ -320,10 +361,15 @@ private fun CheckoutSheet(s: PosState, vm: PosViewModel) {
 
         Spacer(Modifier.height(16.dp))
         Text("Payment", style = MaterialTheme.typography.titleSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-            PaymentMode.entries.forEach { mode ->
-                FilterChip(selected = s.paymentMode == mode, onClick = { vm.setPayment(mode) },
-                    label = { Text(paymentLabel(mode.name)) })
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+            PaymentMode.entries.forEachIndexed { i, mode ->
+                SegmentedButton(
+                    selected = s.paymentMode == mode,
+                    onClick = { vm.setPayment(mode) },
+                    shape = SegmentedButtonDefaults.itemShape(i, PaymentMode.entries.size, MaterialTheme.shapes.small),
+                    icon = {},
+                    label = { Text(paymentLabel(mode.name), maxLines = 1) },
+                )
             }
         }
         Spacer(Modifier.height(8.dp))

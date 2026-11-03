@@ -1,6 +1,28 @@
 package com.medassist.app.ui.pharmacy
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.rounded.LocalPharmacy
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
+import com.medassist.app.ui.common.AppCard
+import com.medassist.app.ui.theme.LocalStatusColors
+import com.medassist.app.ui.theme.Numeric
+import java.math.BigDecimal
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,14 +40,10 @@ import androidx.compose.material.icons.outlined.Inventory
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material.icons.outlined.TrendingUp
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.PointOfSale
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,7 +81,6 @@ import com.medassist.app.data.PharmacyContext
 import com.medassist.app.ui.common.BarChart
 import com.medassist.app.ui.common.ErrorBox
 import com.medassist.app.ui.common.LoadingBox
-import com.medassist.app.ui.common.StatCard
 import com.medassist.app.ui.common.StatusPill
 import com.medassist.app.ui.common.Tone
 import com.medassist.app.ui.common.UiState
@@ -157,24 +174,43 @@ fun DashboardScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(org?.name ?: "Your pharmacy", style = MaterialTheme.typography.titleLarge)
-                        BranchPicker(branches, scope, vm::selectScope)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNotifications) {
-                        BadgedBox(badge = { if (unread > 0) Badge { Text(if (unread > 99) "99+" else unread.toString()) } }) {
-                            Icon(Icons.Outlined.Notifications, "Notifications")
+            Column {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                    title = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp)) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Rounded.LocalPharmacy, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(19.dp))
+                                }
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Column {
+                                Text(org?.name ?: "Your pharmacy", style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                BranchPicker(branches, scope, vm::selectScope)
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                    actions = {
+                        IconButton(onClick = onNotifications) {
+                            BadgedBox(badge = { if (unread > 0) Badge { Text(if (unread > 99) "99+" else unread.toString()) } }) {
+                                Icon(Icons.Outlined.Notifications, "Notifications")
+                            }
+                        }
+                    },
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = onSell, icon = { Icon(Icons.Rounded.PointOfSale, null) }, text = { Text("New bill") })
+            ExtendedFloatingActionButton(
+                onClick = onSell,
+                shape = MaterialTheme.shapes.medium,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                icon = { Icon(Icons.Rounded.PointOfSale, null) },
+                text = { Text("New bill") },
+            )
         },
     ) { padding ->
         PullToRefreshBox(isRefreshing = refreshing, onRefresh = { vm.load(pull = true) }, modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -192,9 +228,16 @@ private fun BranchPicker(branches: List<BranchView>, selected: String?, onSelect
     if (branches.size < 2) return
     var open by remember { mutableStateOf(false) }
     Box {
-        TextButton(onClick = { open = true }, contentPadding = PaddingValues(0.dp)) {
-            Text(branches.firstOrNull { it.id == selected }?.name ?: "All branches", style = MaterialTheme.typography.labelLarge)
-            Icon(Icons.Rounded.ExpandMore, null)
+        Row(
+            Modifier.clip(MaterialTheme.shapes.extraSmall).clickable { open = true }.padding(vertical = 1.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                branches.firstOrNull { it.id == selected }?.name ?: "All branches",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Icon(Icons.Rounded.ExpandMore, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         DropdownMenu(open, { open = false }) {
             DropdownMenuItem(text = { Text("All branches") }, onClick = { open = false; onSelect(null) })
@@ -203,6 +246,10 @@ private fun BranchPicker(branches: List<BranchView>, selected: String?, onSelect
     }
 }
 
+/**
+ * Counter Pro dashboard: a 2×2 KPI grid with hairlines, the week's revenue with gridlines, then a
+ * "needs attention" queue. Everything a counter needs fits above the fold; each number is a shortcut.
+ */
 @Composable
 private fun DashboardContent(
     d: Dashboard,
@@ -212,65 +259,129 @@ private fun DashboardContent(
     onOpenStock: () -> Unit,
     onReports: () -> Unit,
 ) {
-    LazyColumn(contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    val scheme = MaterialTheme.colorScheme
+    val status = LocalStatusColors.current
+    LazyColumn(contentPadding = PaddingValues(16.dp, 14.dp, 16.dp, 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            Text(greeting(name), style = MaterialTheme.typography.headlineSmall)
-            org?.subscription?.let { sub ->
-                if (sub.status == "TRIALING" && sub.trialEndsAt != null) {
-                    Spacer(Modifier.height(6.dp))
-                    StatusPill("PRO trial until ${sub.trialEndsAt.asDateTime().substringBefore(",")}", Tone.Brand)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(greeting(name), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                org?.subscription?.let { sub ->
+                    if (sub.status == "TRIALING" && sub.trialEndsAt != null) {
+                        StatusPill("PRO trial · ${sub.trialEndsAt.asDateTime().substringBefore(",")}", Tone.Brand)
+                    }
                 }
             }
         }
         item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)) {
-                Column(Modifier.padding(20.dp)) {
-                    Text("Today's sales", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f))
-                    Text(d.salesToday.rupeesRounded(), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.onPrimary)
-                    Text(
-                        "${d.invoicesToday} bills · ${d.salesMonthToDate.rupeesRounded()} this month",
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                    )
+            AppCard {
+                Row(Modifier.height(IntrinsicSize.Min)) {
+                    Kpi("Today's sales", d.salesToday.rupeesRounded(), "${d.invoicesToday} bills · ${d.salesMonthToDate.rupeesRounded()} this month",
+                        scheme.onSurface, Modifier.weight(1f), onReports)
+                    VerticalDivider(color = scheme.outlineVariant)
+                    Kpi("Profit this month", d.grossProfitMonthToDate.rupeesRounded(), "before tax", status.success, Modifier.weight(1f), onReports)
+                }
+                HorizontalDivider(color = scheme.outlineVariant)
+                Row(Modifier.height(IntrinsicSize.Min)) {
+                    Kpi("Low stock", d.lowStockProducts.toString(), "below reorder level",
+                        if (d.lowStockProducts > 0) status.warning else scheme.onSurface, Modifier.weight(1f), onOpenStock)
+                    VerticalDivider(color = scheme.outlineVariant)
+                    Kpi("Expiring in 30 days", d.batchesExpiringIn30Days.toString(), "${d.valueExpiringIn30Days.rupeesRounded()} at cost",
+                        if (d.batchesExpiringIn30Days > 0) scheme.error else scheme.onSurface, Modifier.weight(1f), onOpenStock)
                 }
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StatCard("Open orders", d.openOrders.toString(), Icons.Outlined.ShoppingBag, Modifier.weight(1f),
-                    tone = if (d.openOrders > 0) Tone.Warning else Tone.Brand, onClick = onOpenOrders)
-                StatCard("Low stock", d.lowStockProducts.toString(), Icons.Outlined.Warning, Modifier.weight(1f),
-                    tone = if (d.lowStockProducts > 0) Tone.Danger else Tone.Brand, onClick = onOpenStock)
-            }
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StatCard("Expiring in 30 days", d.batchesExpiringIn30Days.toString(), Icons.Outlined.EventBusy, Modifier.weight(1f),
-                    tone = if (d.batchesExpiringIn30Days > 0) Tone.Warning else Tone.Brand,
-                    caption = "${d.valueExpiringIn30Days.rupeesRounded()} at cost", onClick = onOpenStock)
-                StatCard("Profit this month", d.grossProfitMonthToDate.rupeesRounded(), Icons.Outlined.TrendingUp, Modifier.weight(1f),
-                    tone = Tone.Success, caption = "before tax", onClick = onReports)
-            }
-        }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest)) {
-                Column(Modifier.padding(16.dp)) {
+            AppCard {
+                Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Last 7 days", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        Column(Modifier.weight(1f)) {
+                            Text("Last 7 days", style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
+                            val week = d.last7Days.fold(BigDecimal.ZERO) { acc, p -> acc + p.revenue }
+                            Text(week.rupeesRounded(), style = MaterialTheme.typography.headlineSmall.merge(Numeric))
+                        }
                         TextButton(onClick = onReports) { Text("Reports") }
                     }
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(10.dp))
                     BarChart(
                         values = d.last7Days.map { it.revenue.toFloat() },
                         labels = d.last7Days.map { dayLabel(it.date) },
+                        modifier = Modifier.padding(end = 8.dp),
                     )
                 }
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StatCard("Stock value", d.stockValueAtCost.rupeesRounded(), Icons.Outlined.Inventory, Modifier.weight(1f), caption = "at cost")
-                StatCard("Refills due", d.refillsDueIn3Days.toString(), Icons.Outlined.Receipt, Modifier.weight(1f), caption = "next 3 days")
+            Text("Needs attention", style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, start = 2.dp))
+        }
+        item {
+            AppCard {
+                QueueRow(Icons.Outlined.ShoppingBag, scheme.secondary, "Online orders to handle",
+                    if (d.openOrders > 0) "Pack or confirm pickup" else "All caught up", d.openOrders, onOpenOrders)
+                HorizontalDivider(color = scheme.outlineVariant)
+                QueueRow(Icons.Outlined.Inventory, status.warning, "Low on stock",
+                    "Reorder before you run out", d.lowStockProducts, onOpenStock)
+                HorizontalDivider(color = scheme.outlineVariant)
+                QueueRow(Icons.Outlined.EventBusy, scheme.error, "Batches expiring soon",
+                    "${d.valueExpiringIn30Days.rupeesRounded()} at cost in 30 days", d.batchesExpiringIn30Days, onOpenStock)
+                HorizontalDivider(color = scheme.outlineVariant)
+                QueueRow(Icons.Outlined.Autorenew, status.info, "Refills due",
+                    "Customers due in the next 3 days", d.refillsDueIn3Days, null)
+                HorizontalDivider(color = scheme.outlineVariant)
+                QueueRow(Icons.Outlined.Receipt, scheme.onSurfaceVariant, "Stock value",
+                    "All batches, at cost", null, onOpenStock, valueText = d.stockValueAtCost.rupeesRounded())
             }
+        }
+    }
+}
+
+@Composable
+private fun Kpi(label: String, value: String, caption: String, valueColor: Color, modifier: Modifier, onClick: () -> Unit) {
+    Column(modifier.fillMaxHeight().clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(4.dp))
+        Text(value, style = MaterialTheme.typography.headlineSmall.merge(Numeric), color = valueColor, maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+        Text(caption, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
+    }
+}
+
+@Composable
+private fun QueueRow(
+    icon: ImageVector,
+    tint: Color,
+    title: String,
+    subtitle: String,
+    count: Long?,
+    onClick: (() -> Unit)?,
+    valueText: String? = null,
+) {
+    val active = (count ?: 1L) > 0
+    Row(
+        Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 14.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(tint.copy(alpha = if (active) 0.14f else 0.06f)),
+            contentAlignment = Alignment.Center,
+        ) { Icon(icon, null, tint = if (active) tint else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp)) }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
+        }
+        Text(
+            valueText ?: count.toString(),
+            style = MaterialTheme.typography.titleMedium.merge(Numeric),
+            color = if (active && valueText == null) tint else MaterialTheme.colorScheme.onSurface,
+        )
+        if (onClick != null) {
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+        } else {
+            Spacer(Modifier.width(20.dp))
         }
     }
 }
@@ -287,6 +398,3 @@ private fun greeting(name: String): String {
 
 private fun dayLabel(iso: String): String =
     runCatching { LocalDate.parse(iso).dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) }.getOrDefault("")
-
-@Suppress("unused")
-private val unusedWidth = Modifier.width(0.dp)

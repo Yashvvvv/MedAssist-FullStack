@@ -29,6 +29,8 @@ import com.medassist.app.ui.account.SessionViewModel
 import com.medassist.app.ui.auth.AuthNavHost
 import com.medassist.app.ui.patient.PatientApp
 import com.medassist.app.ui.pharmacy.PharmacyApp
+import com.medassist.app.ui.theme.AppLook
+import com.medassist.app.ui.theme.MedAssistTheme
 
 /**
  * The top-level switch. The session decides the whole app: signed out → sign-in flow, pharmacy
@@ -38,6 +40,7 @@ import com.medassist.app.ui.pharmacy.PharmacyApp
 @Composable
 fun AppRoot(sessionViewModel: SessionViewModel) {
     val session by sessionViewModel.session.collectAsStateWithLifecycle()
+    val theme by sessionViewModel.theme.collectAsStateWithLifecycle()
     val mode = when (val s = session) {
         Session.Unknown -> "splash"
         Session.SignedOut -> "auth"
@@ -47,8 +50,8 @@ fun AppRoot(sessionViewModel: SessionViewModel) {
         when {
             m == "splash" -> Splash()
             m == "auth" -> AuthNavHost()
-            m.startsWith("pharmacy") -> PharmacyApp(sessionViewModel)
-            else -> PatientApp(sessionViewModel)
+            m.startsWith("pharmacy") -> MedAssistTheme(look = AppLook.Staff, mode = theme) { PharmacyApp(sessionViewModel) }
+            else -> MedAssistTheme(look = AppLook.Patient, mode = theme) { PatientApp(sessionViewModel) }
         }
     }
 }
