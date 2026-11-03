@@ -1,5 +1,7 @@
 package com.medassist.app.ui.pharmacy.stock
 
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.FloatingActionButtonDefaults
 import com.medassist.app.ui.theme.AppButtonShape
 import com.medassist.app.ui.common.appBarColors
 import androidx.compose.foundation.layout.Arrangement
@@ -133,14 +135,14 @@ fun StockScreen(onReceive: () -> Unit, onImport: () -> Unit, vm: StockViewModel 
                 title = {
                     Column {
                         Text("Stock")
-                        branch?.let { Text(it.name, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        branch?.let { Text(it.name, style = MaterialTheme.typography.labelMedium, color = LocalContentColor.current.copy(alpha = 0.72f)) }
                     }
                 },
                 actions = { IconButton(onClick = onImport) { Icon(Icons.Outlined.LibraryAdd, "Add from catalogue") } },
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(shape = AppButtonShape, onClick = onReceive, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Receive stock") })
+            ExtendedFloatingActionButton(shape = AppButtonShape, containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary, elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp), onClick = onReceive, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Receive stock") })
         },
     ) { padding ->
         Column(Modifier.padding(padding)) {
